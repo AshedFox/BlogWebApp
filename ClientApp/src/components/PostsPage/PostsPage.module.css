@@ -1,0 +1,7 @@
+.container {
+  padding: 15px 0;
+}
+.container .list > *:not(:last-child) {
+  margin-bottom: 15px;
+}
+/*# sourceMappingURL=PostsPage.module.css.map */

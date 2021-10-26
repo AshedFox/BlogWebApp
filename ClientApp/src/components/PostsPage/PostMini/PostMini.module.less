@@ -1,0 +1,40 @@
+@import "../../../less/variables";
+
+.container{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px 30px;
+
+  .header{
+    font-size: 13px;
+    margin-bottom: 5px;
+
+    .creator{
+      font-weight: 500;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .date{
+      color: @textColor3;
+    }
+  }
+  .title{
+    font-size: 22px;
+    font-weight: 600;
+    line-height: initial;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: 0.5s;
+
+    &:hover{
+      color: @color3;
+    }
+  }
+
+  .short_desc{
+    font-size: 15px;
+  }
+}

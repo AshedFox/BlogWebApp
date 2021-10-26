@@ -1,0 +1,17 @@
+@import "../../less/variables";
+
+.container{
+  max-width: @containerWidth;
+  margin: 0 auto;
+
+  @media (max-width: @md1) {
+    max-width: 970px;
+  }
+  @media (max-width: @md2) {
+    max-width: 750px;
+  }
+  @media (max-width: @md3) {
+    max-width: none;
+    padding: 0 10px;
+  }
+}

@@ -1,0 +1,74 @@
+.menu {
+  position: relative;
+  z-index: 99;
+}
+.menu .button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 24px;
+  cursor: pointer;
+}
+.menu .button > span,
+.menu .button > span::before,
+.menu .button > span::after {
+  display: block;
+  background-color: #fafafa;
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  left: 0;
+  transition-duration: 0.25s;
+}
+.menu .button > span::before {
+  content: '';
+  top: -8px;
+}
+.menu .button > span::after {
+  content: '';
+  top: 8px;
+}
+.menu .list {
+  display: flex;
+  flex-direction: column;
+  right: 0;
+  top: 0;
+  margin-top: 30px;
+  background: white;
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  width: 300px;
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.menu .list .list_item {
+  display: block;
+  padding: 16px 24px;
+  color: #222222;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  transition-duration: 0.25s;
+  cursor: pointer;
+}
+.menu .list .list_item:hover {
+  background-color: #D8F2F0;
+}
+.menu[class~="active"] .button > span {
+  transform: rotate(45deg);
+}
+.menu[class~="active"] .button > span::before {
+  top: 0;
+  transform: rotate(0);
+}
+.menu[class~="active"] .button > span::after {
+  top: 0;
+  transform: rotate(90deg);
+}
+.menu[class~="active"] .list {
+  opacity: 1;
+}
+/*# sourceMappingURL=BurgerMenu.module.css.map */
