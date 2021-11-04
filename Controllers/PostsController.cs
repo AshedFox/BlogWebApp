@@ -6,6 +6,7 @@ using AutoMapper;
 using BlogWebApp.Data;
 using BlogWebApp.DTOs;
 using BlogWebApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace BlogWebApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PostsController : ControllerBase
     {
         private readonly PostgresDbContext _context;
@@ -38,7 +40,7 @@ namespace BlogWebApp.Controllers
                         .OrderByDescending(post => post.CreatedAt)
                         .Skip(offset).Take(limit)
                         .ToListAsync()),
-                    MaxPage = _context.Posts.Count() / limit
+                    MaxPage = (int)Math.Ceiling((double)_context.Posts.Count() / limit)
                 };
             }
 
@@ -48,7 +50,7 @@ namespace BlogWebApp.Controllers
                     .Include(post => post.Creator)
                     .OrderByDescending(post => post.CreatedAt)
                     .Skip(offset).Take(limit).ToListAsync()),
-                MaxPage = _context.Posts.Count() / limit
+                MaxPage = (int)Math.Ceiling((double)_context.Posts.Count() / limit)
             };
         }
 

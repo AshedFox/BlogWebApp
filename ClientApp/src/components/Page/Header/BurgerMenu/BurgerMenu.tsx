@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import styles from "./BurgerMenu.module.css"
 import {routes} from "../../../../constants/routes";
-import AccountStore from "../../../../store/AccountStore";
+import {useAccountStore} from "../../../../store/AccountStore";
 import { Link } from 'react-router-dom';
 
 const BurgerMenu = () => {
-    const {logout} = AccountStore
+    const {logout} = useAccountStore();
     const [isOpen, setIsOpen] = useState(false);
 
     return (

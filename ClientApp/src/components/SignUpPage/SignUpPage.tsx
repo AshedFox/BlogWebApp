@@ -3,15 +3,16 @@ import styles from "./SignUpPage.module.css";
 import CryptoJS from "crypto-js";
 import {routes} from "../../constants/routes";
 import {SignUpDto} from "../../DTOs/SignUpDto";
-import AccountStore, {AccountStoreStatus} from "../../store/AccountStore";
+import {AccountStoreStatus, useAccountStore} from "../../store/AccountStore";
 import {observer} from "mobx-react";
+import Loader from "../Loader/Loader";
 
 const SignUpPage = observer(() => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordRepeat, setPasswordRepeat] = useState("");
     const [name, setName] = useState("");
-    const {signUp, status} = AccountStore;
+    const {signUp, status} = useAccountStore();
 
     const submitForm = async (e:SyntheticEvent) => {
         e.preventDefault();
@@ -31,7 +32,7 @@ const SignUpPage = observer(() => {
     }
 
     if (status === AccountStoreStatus.Loading) {
-        return <div>LOADING...</div>
+        return <Loader/>
     }
 
     return (
@@ -45,21 +46,21 @@ const SignUpPage = observer(() => {
                         <fieldset className={styles.fields}>
                             <input className={styles.input} name={"email"}
                                    type={"email"} value={email}
-                                   placeholder={"Email"}
+                                   placeholder={"Email"} maxLength={320}
                                    onChange={e => setEmail(e.target.value)}
                             />
                             <input className={styles.input} name={"password"}
                                    type={"password"} value={password}
-                                   placeholder={"Пароль"}
+                                   placeholder={"Пароль"} maxLength={64}
                                    onChange={e => setPassword(e.target.value)}
                             />
                             <input className={styles.input} name={"passwordRepeat"}
                                    type={"password"} value={passwordRepeat}
-                                   placeholder={"Пароль (повторно)"}
+                                   placeholder={"Пароль (повторно)"} maxLength={64}
                                    onChange={e => setPasswordRepeat(e.target.value)}
                             />
                             <input className={styles.input} name={"name"}
-                                   type={"text"} value={name}
+                                   type={"text"} value={name} maxLength={100}
                                    placeholder={"Имя пользователя"}
                                    onChange={e => setName(e.target.value)}
                             />

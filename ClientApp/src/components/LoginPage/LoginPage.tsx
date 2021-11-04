@@ -3,14 +3,15 @@ import styles from "./LoginPage.module.css";
 import CryptoJS from "crypto-js";
 import {routes} from "../../constants/routes";
 import {LoginDto} from "../../DTOs/LoginDto";
-import AccountStore, {AccountStoreStatus} from "../../store/AccountStore";
 import {observer} from "mobx-react";
+import Loader from "../Loader/Loader";
+import {AccountStoreStatus, useAccountStore} from "../../store/AccountStore";
 
 const LoginPage = observer(() => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const {login, status} = AccountStore;
+    const {login, status} = useAccountStore();
 
     const submitForm = async (e:SyntheticEvent) => {
         e.preventDefault();
@@ -24,7 +25,7 @@ const LoginPage = observer(() => {
     }
 
     if (status === AccountStoreStatus.Loading) {
-        return <div>LOADING...</div>
+        return <Loader/>
     }
 
     return (
@@ -38,11 +39,11 @@ const LoginPage = observer(() => {
                         <div className={styles.fields}>
                             <input className={styles.input} value={email}
                                    name={"email"} type={"text"}
-                                   placeholder={"Email"}
+                                   placeholder={"Email"} maxLength={320}
                                    onChange={e => setEmail(e.target.value)}
                             />
                             <input className={styles.input} value={password}
-                                   name={"password"} type={"password"}
+                                   name={"password"} type={"password"} maxLength={64}
                                    placeholder={"Пароль"} autoComplete={"currentPassword"}
                                    onChange={e => setPassword(e.target.value)}
                             />

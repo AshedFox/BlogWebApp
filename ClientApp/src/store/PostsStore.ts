@@ -5,6 +5,7 @@ import {PostModel} from "../models/PostModel";
 import postsService from "../services/postsService";
 import {createContext, useContext} from "react";
 import {GetPostsResultDto} from "../DTOs/GetPostsResultDto";
+import {AccountStore} from "./AccountStore";
 
 export enum PostsStoreStatus {
     None = "None",
@@ -22,9 +23,10 @@ class Posts {
     status = PostsStoreStatus.None;
 
     currentPage = 0;
-    countPerPage = 1;
+    countPerPage = 8;
     maxPage = 0;
 
+    setPage = (page: number) => this.currentPage = page;
     setNextPage = () => this.currentPage++;
     setPrevPage = () => this.currentPage--;
     
@@ -32,7 +34,21 @@ class Posts {
         this.status = PostsStoreStatus.Loading;
 
         postsService.getPosts(currentPage * count, count, creatorId).then(
-            (getPostsResult: GetPostsResultDto) => this.getPostsSuccess(getPostsResult, currentPage),
+            (response) => {
+                if (response.status === 200) {
+                    response.json().then(
+                        (getPostsResult: GetPostsResultDto) => this.getPostsSuccess(getPostsResult, currentPage),
+                        () => this.getPostsError()
+                    )
+                }
+                else {
+                    this.getPostsError()
+
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+                }
+            },
             () => this.getPostsError()
         );
     }
@@ -45,7 +61,7 @@ class Posts {
     }
     getPostsError = () => this.status = PostsStoreStatus.Error;
 
-    createPost = async (postToAdd: PostToAddDto) => {
+    createPost = (postToAdd: PostToAddDto) => {
         this.status = PostsStoreStatus.Loading;
 
         postsService.postPost(postToAdd).then(
@@ -55,6 +71,10 @@ class Posts {
                 }
                 else {
                     this.createPostsError();
+
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
                 }
             },
             () => this.createPostsError()
@@ -64,7 +84,7 @@ class Posts {
     createPostsSuccess = () => this.status = PostsStoreStatus.Success;
     createPostsError = () => this.status = PostsStoreStatus.Error;
     
-    editPost = async (postToEdit: PostToEditDto) => {
+    editPost = (postToEdit: PostToEditDto) => {
         this.status = PostsStoreStatus.Loading
 
         postsService.putPost(postToEdit).then(
@@ -74,6 +94,10 @@ class Posts {
                 }
                 else {
                     this.editPostsError();
+
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
                 }
             },
             () => this.editPostsError()
@@ -83,7 +107,7 @@ class Posts {
     editPostsSuccess = () => this.status = PostsStoreStatus.Success;
     editPostsError = () => this.status = PostsStoreStatus.Error;
     
-    deletePost = async (id: string) => {
+    deletePost = (id: string) => {
         this.status = PostsStoreStatus.Loading
 
         postsService.deletePost(id).then(
@@ -93,6 +117,10 @@ class Posts {
                 }
                 else {
                     this.deletePostsError();
+                    
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
                 }
             },
             () => this.deletePostsError()

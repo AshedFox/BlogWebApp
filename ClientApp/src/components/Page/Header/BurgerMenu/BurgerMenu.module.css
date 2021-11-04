@@ -42,6 +42,7 @@
   position: absolute;
   overflow: hidden;
   opacity: 0;
+  visibility: hidden;
   transition: opacity 0.25s;
 }
 .menu .list .list_item {
@@ -70,5 +71,6 @@
 }
 .menu[class~="active"] .list {
   opacity: 1;
+  visibility: visible;
 }
 /*# sourceMappingURL=BurgerMenu.module.css.map */

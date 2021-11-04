@@ -1,9 +1,10 @@
-import {autorun, makeAutoObservable, reaction, runInAction} from "mobx";
+import {makeAutoObservable, reaction} from "mobx";
 import {LoginResultDto} from "../DTOs/LoginResultDto";
 import accountService from "../services/accountService";
 import {LoginDto} from "../DTOs/LoginDto";
 import {SignUpDto} from "../DTOs/SignUpDto";
 import {AccountModel} from "../models/AccountModel";
+import {createContext, useContext} from "react";
 
 export enum AccountStoreStatus {
     None = "None",
@@ -23,70 +24,89 @@ class Account {
 
     account?: AccountModel;
     status: AccountStoreStatus = AccountStoreStatus.None;
+    
+    getAuthJWT = () => {
+        return this.account?.authToken;
+    }
+    
+    login = (loginData: LoginDto) => {
+        this.status = AccountStoreStatus.Loading;
 
-    login = async (loginData: LoginDto) => {
-        try {
-            runInAction(() => this.status = AccountStoreStatus.Loading);
-
-            const response = await accountService.login(loginData);
-
-            if (response.status === 200) {
-                const loginResult: LoginResultDto = await response.json();
-
-                runInAction(() => {
-                    this.account = {
-                        user: loginResult.user,
-                        authToken: loginResult.authToken,
-                        tokenValidTo: loginResult.tokenValidTo
-                    }
-
-                    this.status = AccountStoreStatus.Success;
-                });
-            } else {
-                runInAction(() => this.status = AccountStoreStatus.Error);
-            }
-        } catch (e) {
-            runInAction(() => this.status = AccountStoreStatus.Error);
-        }
+        accountService.login(loginData).then(
+            (response) => {
+                if (response.status === 200) {
+                    response.json().then(
+                        (loginResult: LoginResultDto) => this.loginSuccess(loginResult),
+                        () => this.loginError()
+                    )
+                }
+                else {
+                    this.loginError();
+                }
+            },
+            () => this.loginError()
+        )
     }
 
-    signUp = async (signUpData: SignUpDto) => {
-        try {
-            runInAction(() => this.status = AccountStoreStatus.Loading);
+    loginSuccess = (loginResult: LoginResultDto) =>  {
+        this.account = {
+            user: loginResult.user,
+            authToken: loginResult.authToken,
+            tokenValidTo: loginResult.tokenValidTo
+        };
+        this.status = AccountStoreStatus.Success;
+    }
+    loginError = () => this.status = AccountStoreStatus.Error;
+    
+    signUp = (signUpData: SignUpDto) => {
+        this.status = AccountStoreStatus.Loading;
 
-            const response = await accountService.signUp(signUpData);
-
-            if (response.status === 201) {
-                runInAction(() => this.status = AccountStoreStatus.Success);
-            } else {
-                runInAction(() => this.status = AccountStoreStatus.Error);
-            }
-        } catch (e) {
-            runInAction(() => this.status = AccountStoreStatus.Error);
-        }
+        accountService.signUp(signUpData).then(
+            (response) => {
+                if (response.status === 201) {
+                    this.signUpSuccess()
+                }
+                else {
+                    this.signUpError();
+                }
+            },
+            () => this.signUpError()
+        )
     }
 
-    logout = async () => {
-        try {
-            runInAction(() => this.status = AccountStoreStatus.Loading);
+    signUpSuccess = () => this.status = AccountStoreStatus.Success;
+    signUpError = () => this.status = AccountStoreStatus.Error;
+    
+    logout = () => {
+        this.status = AccountStoreStatus.Loading;
 
-            const response = await accountService.logout();
-
-            if (response.status === 200) {
-                runInAction(() => {
-                    this.account = undefined;
-                    this.status = AccountStoreStatus.Success
-                });
-            } else {
-                runInAction(() => this.status = AccountStoreStatus.Error);
-            }
-        } catch (e) {
-            runInAction(() => this.status = AccountStoreStatus.Error);
-        }
+        accountService.logout().then(
+            (response) => {
+                if (response.status === 200) {
+                    this.logoutSuccess();
+                } 
+                else {
+                    this.logoutError();
+                }
+            },
+            () => this.logoutError()
+        );
     }
+
+    logoutSuccess = () => {
+        this.account = undefined;
+        this.status = AccountStoreStatus.Success
+    }
+    logoutError = () => this.status = AccountStoreStatus.Error;
 }
 
-const AccountStore = new Account();
+export const AccountStore = new Account();
+
+const AccountStoreContext = createContext(AccountStore);
+
+export const useAccountStore = () => {
+    return useContext(AccountStoreContext);
+}
 
 reaction(
     () => AccountStore.account,
@@ -99,5 +119,3 @@ reaction(
         }
     }
 )
-
-export default AccountStore;

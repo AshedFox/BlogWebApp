@@ -2,10 +2,10 @@ import React from 'react';
 import {Redirect, Route, Switch} from "react-router-dom";
 import {privateRoutes, publicRoutes, routes} from "../../constants/routes";
 import {observer} from "mobx-react";
-import AccountStore from "../../store/AccountStore";
+import {useAccountStore} from "../../store/AccountStore";
 
 const AppRouter = observer (() => {
-    const {account} = AccountStore
+    const {account} = useAccountStore();
 
     return (
         account && account.tokenValidTo.toString() > new Date().toISOString() ?
@@ -17,7 +17,7 @@ const AppRouter = observer (() => {
         </Switch> :
         <Switch>
             {privateRoutes.map(({path, component}) =>
-                <Route key={path} path={path} component={component}/>
+                <Route key={path} path={path} component={component} exact/>
             )}
             <Redirect to={routes.login}/>
         </Switch>
