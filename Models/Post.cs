@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BlogWebApp.Models
 {
@@ -18,5 +19,8 @@ namespace BlogWebApp.Models
 
         public virtual Guid CreatorId { get; set; }
         public virtual User Creator { get; set; }
+        
+        public virtual Guid? CoverId { get; set; }
+        public virtual File Cover { get; set; }
     }
 }

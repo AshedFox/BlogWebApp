@@ -20,7 +20,29 @@
 
       margin-bottom: 20px;
     }
-    
+    .dropzone {
+      border-radius: 10px;
+      outline: 2px solid @color1;
+      background-color: @color7;
+      overflow: hidden;
+      cursor: pointer;
+      margin-bottom: 18px;
+      box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+
+      .cover_preview{
+        object-fit: cover;
+        margin: auto;
+        width: 66%;
+        max-height: 600px;
+
+      }
+      
+      .default_text{
+        padding: 40px;
+
+        color: @textColor3;
+      }
+    }
     .input{
       margin-bottom: 18px;
       background-color: white;

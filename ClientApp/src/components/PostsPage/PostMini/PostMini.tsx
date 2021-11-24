@@ -9,18 +9,29 @@ type PostMiniProps = {
 }
 
 const PostMini = ({post}:PostMiniProps) => {
+    console.log(post.creator.avatar)
     
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <span className={styles.creator}>
-                    <Link to={routes.myProfile+`/${post.creator.id}`}>
-                        {post.creator.name}
-                    </Link>
-                </span>
-                <span className={styles.date}>{new Date(post.createdAt).toLocaleString()}</span>
+                <Link className={styles.creator} to={routes.myProfile+`/${post.creator.id}`}>
+                    {
+                        post.creator.avatar &&
+                        <div className={styles.creator_avatar}>
+                            <img className={styles.image} src={post.creator.avatar.url}/>
+                        </div>
+                    }
+                    <div>{post.creator.name}</div>
+                </Link>
+                <div className={styles.date}>{new Date(post.createdAt).toLocaleString()}</div>
             </div>
             <div className={styles.title}><Link to={routes.posts+`/${post.id}`}>{post.title}</Link></div>
+            {
+                post.cover && 
+                <div className={styles.cover_container}>
+                    <img className={styles.image} src={post.cover.url} alt="обложка статьи"/>
+                </div>
+            }
             <div className={styles.short_desc}>
                 {post.content.length > 2000 ? 
                     post.content.substr(0, 2000) + "..." :

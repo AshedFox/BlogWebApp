@@ -37,37 +37,42 @@ const PostsPage = observer(() => {
     return (
         <Page>
             <div className={styles.container}>
+                <div className={styles.content_container}>
                 {
                     status === PostsStoreStatus.Loading ?
                         <Loader/> :
-                        status === PostsStoreStatus.Error ? 
+
+                        status === PostsStoreStatus.Error ?
                             <div>Error!</div> :
-                            <div className={styles.list}>
-                                {posts.map((post) => <PostMini key={post.id} post={post}/>)}
-                            </div>
+                            <>
+                                <div className={styles.list}>
+                                    {posts.map((post) => <PostMini key={post.id} post={post}/>)}
+                                </div>
+                                <div className={styles.pagination_container}>
+                                    <button className={styles.button} disabled={currentPage <= 0}
+                                            onClick={setPrevPage}>
+                                        {"<"}
+                                    </button>
+                                    <div className={styles.page_swap_container}>
+                                        <div>
+                                            <form onSubmit={handlePageChange}>
+                                                <input className={styles.input} value={newPage}
+                                                       type={"number"} min={1} max={maxPage}
+                                                       placeholder={(currentPage + 1).toString()}
+                                                       onChange={(e) => setNewPage(e.target.value)}>
+                                                </input>
+                                                <button type={"submit"} hidden/>
+                                            </form>
+                                        </div>
+                                        <div>/ {maxPage}</div>
+                                    </div>
+                                    <button className={styles.button} disabled={currentPage >= maxPage - 1}
+                                            onClick={setNextPage}>
+                                        {">"}
+                                    </button>
+                                </div>
+                            </>
                 }
-                <div className={styles.pagination_container}>
-                    <button className={styles.button} disabled={currentPage <= 0} 
-                            onClick={setPrevPage}>
-                        {"<"}
-                    </button>
-                    <div className={styles.page_swap_container}>
-                        <div>
-                            <form onSubmit={handlePageChange}>
-                                <input className={styles.input} value={newPage} 
-                                       type={"number"} min={1} max={maxPage}
-                                       placeholder={(currentPage + 1).toString()}
-                                       onChange={(e) => setNewPage(e.target.value)}>
-                                </input>
-                                <button type={"submit"} hidden/>
-                            </form>
-                        </div>
-                        <div>/ {maxPage}</div>
-                    </div>
-                    <button className={styles.button} disabled={currentPage >= maxPage - 1} 
-                            onClick={setNextPage}>
-                        {">"}
-                    </button>
                 </div>
             </div>
         </Page>

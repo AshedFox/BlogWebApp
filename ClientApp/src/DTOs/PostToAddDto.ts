@@ -1,5 +1,6 @@
 export interface PostToAddDto {
-    title: string
-    creatorId: string
+    title: string,
+    creatorId: string,
+    coverId?: string,
     content: string
 }

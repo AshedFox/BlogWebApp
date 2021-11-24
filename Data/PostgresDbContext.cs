@@ -7,13 +7,9 @@ namespace BlogWebApp.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
-
+        public DbSet<File> Files { get; set; }
         public PostgresDbContext(DbContextOptions<PostgresDbContext> options) 
-            :base(options)
-        {
-            //Database.EnsureDeleted();
-            //Database.EnsureCreated();
-        }
+            :base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +23,8 @@ namespace BlogWebApp.Data
             modelBuilder.Entity<Post>().Property(post => post.Id).HasDefaultValueSql("uuid_generate_v4()");
             modelBuilder.Entity<Post>().Property(post => post.CreatedAt).ValueGeneratedOnAdd()
                 .HasDefaultValueSql("now()");
+            modelBuilder.Entity<File>().Property(file => file.Id).HasDefaultValueSql("uuid_generate_v4()");
+
         }
     }
 }

@@ -9,10 +9,12 @@ namespace BlogWebApp.Helpers
         public MapperProfile()
         {
             CreateMap<User, UserDto>();
+            CreateMap<User, PostUserDto>();
             CreateMap<SignUpDto, User>();
             CreateMap<Post, PostDto>();
             CreateMap<PostToAddDto, Post>();
             CreateMap<PostToEditDto, Post>();
+            CreateMap<File, FileDto>();
         }
     }
 }

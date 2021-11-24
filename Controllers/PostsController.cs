@@ -36,6 +36,8 @@ namespace BlogWebApp.Controllers
                 {
                     Posts = _mapper.Map<List<Post>, List<PostDto>>(await _context.Posts
                         .Include(post => post.Creator)
+                        .Include(post => post.Creator.Avatar)
+                        .Include(post => post.Cover)
                         .Where(post => post.Creator.Id == creatorId)
                         .OrderByDescending(post => post.CreatedAt)
                         .Skip(offset).Take(limit)
@@ -48,6 +50,8 @@ namespace BlogWebApp.Controllers
             {
                 Posts = _mapper.Map<List<Post>, List<PostDto>>(await _context.Posts
                     .Include(post => post.Creator)
+                    .Include(post => post.Creator.Avatar)
+                    .Include(post => post.Cover)
                     .OrderByDescending(post => post.CreatedAt)
                     .Skip(offset).Take(limit).ToListAsync()),
                 MaxPage = (int)Math.Ceiling((double)_context.Posts.Count() / limit)
@@ -60,6 +64,7 @@ namespace BlogWebApp.Controllers
         {
             var post = await _context.Posts
                 .Include(post => post.Creator)
+                .Include(post => post.Cover)
                 .FirstOrDefaultAsync(post1 => post1.Id == id);
 
             if (post == null)
@@ -94,9 +99,9 @@ namespace BlogWebApp.Controllers
                 return BadRequest();
             }
 
-            _context.Attach(post);
-            _context.Entry(post).Property(post1 => post1.Title).IsModified = true;
-            //_context.Entry(post).State = EntityState.Modified;
+            //_context.Attach(post);
+            //_context.Entry(post).Property(post1 => post1.Title).IsModified = true;
+            _context.Entry(post).State = EntityState.Modified;
 
             try
             {

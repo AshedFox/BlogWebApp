@@ -2,67 +2,77 @@
 
 .container{
   padding: 15px 0;
+  display: grid;
+  grid-template-columns: 3fr 0fr;
 
-  .list {
-    margin-bottom: 20px;
-    
-    & > *:not(:last-child) {
-      margin-bottom: 15px;
-    }
+  @media (min-width: @md3) {
+    grid-template-columns: 3fr 1fr;
   }
-  
-  .pagination_container{
-    display: flex;
-    justify-content: space-between;
+
+  .content_container {
+    width: 100%;
     
-    .page_swap_container{
+    .list {
+      margin-bottom: 20px;
+
+      & > *:not(:last-child) {
+        margin-bottom: 15px;
+      }
+    }
+
+    .pagination_container {
       display: flex;
-      align-items: center;
-      padding: 10px 18px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
-      
-      .input{
-        text-align: right;
-        margin-right: 5px;
-        
-        background-color: transparent;
+      justify-content: space-between;
+
+      .page_swap_container {
+        display: flex;
+        align-items: center;
+        padding: 10px 18px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+
+        .input {
+          text-align: right;
+          margin-right: 5px;
+
+          background-color: transparent;
+          outline: none;
+          border: none;
+
+          &::placeholder {
+            color: @color3;
+          }
+        }
+      }
+
+      .button {
+        color: @textColor2;
+        background-color: @color2;
+        border-radius: 10px;
+
+        padding: 10px 18px;
+
         outline: none;
         border: none;
 
-        &::placeholder{
-          color: @color3;
+        font-size: 16px;
+        font-weight: 500;
+
+        box-shadow: 2px 4px 4px 0 transparent;
+        transition: 0.4s ease;
+
+        &:not(:disabled) {
+          cursor: pointer;
+
+          &:hover {
+            box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+          }
         }
-      }
-    }
-    
-    .button{
-      color: @textColor2;
-      background-color: @color2;
-      border-radius: 10px;
-      
-      padding: 10px 18px;
 
-      outline: none;
-      border:none;
-
-      font-size: 16px;
-      font-weight: 500;
-
-      box-shadow: 2px 4px 4px 0 transparent;
-      transition: 0.4s ease;
-
-      &:not(:disabled) {
-        cursor: pointer;
-        
-        &:hover {
-          box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+        &:disabled {
+          background-color: @color4;
         }
-      }
-      
-      &:disabled {
-        background-color: @color4;
       }
     }
   }

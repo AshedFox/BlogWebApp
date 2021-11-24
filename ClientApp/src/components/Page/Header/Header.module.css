@@ -6,10 +6,10 @@
   background: #110B26;
 }
 .header .container {
-  max-width: 1290px;
+  max-width: 1096px;
   margin: 0 auto;
 }
-@media (max-width: 1302px) {
+@media (max-width: 1108px) {
   .header .container {
     max-width: 970px;
   }

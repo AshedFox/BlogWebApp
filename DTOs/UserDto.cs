@@ -9,6 +9,7 @@ namespace BlogWebApp.DTOs
         public string Email { get; set; }
         public string Name { get; set; }
         public DateTime CreatedAt { get; set; }
+        public FileDto Avatar { get; set; }
         public ICollection<PostDto> Posts { get; set; } = new List<PostDto>();
     }
 }

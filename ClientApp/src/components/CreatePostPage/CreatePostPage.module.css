@@ -19,6 +19,25 @@
     font-size: 32px;
   }
 }
+.container .form .dropzone {
+  border-radius: 10px;
+  outline: 2px solid #110B26;
+  background-color: #fafafa;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 18px;
+  box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+.container .form .dropzone .cover_preview {
+  object-fit: cover;
+  margin: auto;
+  width: 66%;
+  max-height: 600px;
+}
+.container .form .dropzone .default_text {
+  padding: 40px;
+  color: #626262;
+}
 .container .form .input {
   margin-bottom: 18px;
   background-color: white;

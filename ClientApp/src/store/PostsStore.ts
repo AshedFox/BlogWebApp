@@ -67,22 +67,22 @@ class Posts {
         postsService.postPost(postToAdd).then(
             (response) => {
                 if (response.status === 201) {
-                    this.createPostsSuccess();
+                    this.createPostSuccess();
                 }
                 else {
-                    this.createPostsError();
+                    this.createPostError();
 
                     if (response.status === 401) {
                         AccountStore.logout();
                     }
                 }
             },
-            () => this.createPostsError()
+            () => this.createPostError()
         );
     }
 
-    createPostsSuccess = () => this.status = PostsStoreStatus.Success;
-    createPostsError = () => this.status = PostsStoreStatus.Error;
+    createPostSuccess = () => this.status = PostsStoreStatus.Success;
+    createPostError = () => this.status = PostsStoreStatus.Error;
     
     editPost = (postToEdit: PostToEditDto) => {
         this.status = PostsStoreStatus.Loading
@@ -90,22 +90,22 @@ class Posts {
         postsService.putPost(postToEdit).then(
             (response) => {
                 if (response.status === 204) {
-                    this.editPostsSuccess();
+                    this.editPostSuccess();
                 }
                 else {
-                    this.editPostsError();
+                    this.editPostError();
 
                     if (response.status === 401) {
                         AccountStore.logout();
                     }
                 }
             },
-            () => this.editPostsError()
+            () => this.editPostError()
         );
     }
     
-    editPostsSuccess = () => this.status = PostsStoreStatus.Success;
-    editPostsError = () => this.status = PostsStoreStatus.Error;
+    editPostSuccess = () => this.status = PostsStoreStatus.Success;
+    editPostError = () => this.status = PostsStoreStatus.Error;
     
     deletePost = (id: string) => {
         this.status = PostsStoreStatus.Loading
@@ -113,22 +113,22 @@ class Posts {
         postsService.deletePost(id).then(
             (response) => {
                 if (response.status === 204) {
-                    this.deletePostsSuccess();
+                    this.deletePostSuccess();
                 }
                 else {
-                    this.deletePostsError();
+                    this.deletePostError();
                     
                     if (response.status === 401) {
                         AccountStore.logout();
                     }
                 }
             },
-            () => this.deletePostsError()
+            () => this.deletePostError()
         );
     }
     
-    deletePostsSuccess = () => this.status = PostsStoreStatus.Success;
-    deletePostsError = () => this.status = PostsStoreStatus.Error;
+    deletePostSuccess = () => this.status = PostsStoreStatus.Success;
+    deletePostError = () => this.status = PostsStoreStatus.Error;
 }
 
 export const PostsStore = new Posts();

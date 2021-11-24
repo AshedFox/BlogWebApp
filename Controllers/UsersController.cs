@@ -31,7 +31,11 @@ namespace BlogWebApp.Controllers
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
             return _mapper.Map<List<User>, List<UserDto>>(
-                await _context.Users.Include(user => user.Posts).ToListAsync());
+                await _context.Users
+                    .Include(user => user.Posts)
+                    .Include(user => user.Avatar)
+                    .ToListAsync()
+            );
         }
 
         // GET: api/Users/5
@@ -40,6 +44,7 @@ namespace BlogWebApp.Controllers
         {
             var user = await _context.Users
                 .Include(user => user.Posts)
+                .Include(user => user.Avatar)
                 .FirstOrDefaultAsync(user1 => user1.Id == id);
 
             if (user is null)

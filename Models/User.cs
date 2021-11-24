@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BlogWebApp.Models
 {
@@ -23,6 +24,9 @@ namespace BlogWebApp.Models
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }
 
+        public virtual Guid? AvatarId { get; set; }
+        public virtual File Avatar { get; set; }
+        
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
     }
 }
