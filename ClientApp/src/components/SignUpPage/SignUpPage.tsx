@@ -24,14 +24,21 @@ const SignUpPage = observer(() => {
         }
 
         if (password === passwordRepeat){
-            await signUp(signUpData);
+            signUp(signUpData).then(
+                () => {
+                    setEmail("");
+                    setPassword("");
+                    setPasswordRepeat("");
+                    setName("");
+                }
+            );
         }
         else {
             alert("Значения в полях пароля не совпадают")
         }
     }
 
-    if (status === AccountStoreStatus.Loading) {
+    if (status === AccountStoreStatus.SignUpLoading) {
         return <Loader/>
     }
 
@@ -66,8 +73,12 @@ const SignUpPage = observer(() => {
                             />
                         </fieldset>
                         {
-                            status === AccountStoreStatus.Error &&
+                            status === AccountStoreStatus.SignUpError &&
                             <div className={styles.error}>Возникла ошибка при попытке регистрации</div>
+                        }
+                        {
+                            status === AccountStoreStatus.SignUpSuccess &&
+                            <div className={styles.success}>Регистрация прошла успешно</div>
                         }
                         <div className={styles.submit_block}>
                             <a className={styles.link} href={routes.login}>

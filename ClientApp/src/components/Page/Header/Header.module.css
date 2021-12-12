@@ -39,15 +39,17 @@
 .header .container .body .navigation .links_list {
   display: flex;
   align-items: center;
+}
+.header .container .body .navigation .links_list > *:not(:last-child) {
+  margin-right: 36px;
+}
+.header .container .body .link {
+  transition: 0.25s;
   font-size: 18px;
   font-weight: 500;
-}
-.header .container .body .navigation .links_list .link {
-  margin-right: 36px;
-  transition: 0.25s;
   border-bottom: 2px solid transparent;
 }
-.header .container .body .navigation .links_list .link:hover {
+.header .container .body .link:hover {
   border-bottom: 2px solid #fafafa;
 }
 /*# sourceMappingURL=Header.module.css.map */

@@ -97,11 +97,15 @@
       font-weight: 600;
 
       cursor: pointer;
-      box-shadow: 2px 4px 4px 0 transparent;
-      transition: box-shadow 0.4s ease;
+      transition: 0.4s ease-in-out;
 
       &:hover{
-        box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+        background-color: @color4;
+      }
+      &:disabled{
+        cursor: not-allowed;
+        background-color: @color2;
+        opacity: 60%;
       }
     }
   }

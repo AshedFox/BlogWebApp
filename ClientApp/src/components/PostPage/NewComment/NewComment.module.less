@@ -1,0 +1,60 @@
+﻿@import "../../../less/variables";
+
+.container{
+  padding: 20px 30px;
+  background-color: @color7;
+  border-radius: 10px;
+
+  .title{
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    
+    & > *:not(:last-child) {
+      margin-bottom: 10px;
+    }
+    
+    .textarea {
+      background-color: #f3f3f3;
+      padding: 16px;
+      resize: none;
+      border: 1px solid @color4;
+      outline: none;
+
+      border-radius: 10px;
+      
+      //box-shadow: 2px 4px 4px 0 rgba(0, 0, 0, 0.25);
+    }
+    .button{
+      color: @textColor2;
+      background-color: @color2;
+      border-radius: 10px;
+      
+      padding: 8px 30px;
+      margin-right: auto;
+
+      outline: none;
+      border:none;
+
+      font-size: 16px;
+      font-weight: 500;
+
+      cursor: pointer;
+      transition: 0.4s ease-in-out;
+
+      &:hover{
+        background-color: @color4;
+      }
+      &:disabled{
+        cursor: not-allowed;
+        background-color: @color2;
+        opacity: 60%;
+      }
+    }
+  }
+}

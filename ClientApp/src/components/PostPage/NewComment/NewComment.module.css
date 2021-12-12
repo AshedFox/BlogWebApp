@@ -1,0 +1,47 @@
+.container {
+  padding: 20px 30px;
+  background-color: #fafafa;
+  border-radius: 10px;
+}
+.container .title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+.container .form {
+  display: flex;
+  flex-direction: column;
+}
+.container .form > *:not(:last-child) {
+  margin-bottom: 10px;
+}
+.container .form .textarea {
+  background-color: #f3f3f3;
+  padding: 16px;
+  resize: none;
+  border: 1px solid #A8BDBF;
+  outline: none;
+  border-radius: 10px;
+}
+.container .form .button {
+  color: #fafafa;
+  background-color: #2F3040;
+  border-radius: 10px;
+  padding: 8px 30px;
+  margin-right: auto;
+  outline: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.4s ease-in-out;
+}
+.container .form .button:hover {
+  background-color: #A8BDBF;
+}
+.container .form .button:disabled {
+  cursor: not-allowed;
+  background-color: #2F3040;
+  opacity: 60%;
+}
+/*# sourceMappingURL=NewComment.module.css.map */

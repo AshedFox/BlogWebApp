@@ -51,6 +51,11 @@
   font-size: 16px;
   margin-bottom: 20px;
 }
+.container .content .form .success {
+  color: #239423;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
 .container .content .form .submit_block {
   outline: none;
   border: none;

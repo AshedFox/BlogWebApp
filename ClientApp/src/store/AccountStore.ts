@@ -1,22 +1,28 @@
 import {makeAutoObservable, reaction} from "mobx";
-import {LoginResultDto} from "../DTOs/LoginResultDto";
-import accountService from "../services/accountService";
+import {TokensDto} from "../DTOs/TokensDto";
+import usersService from "../services/usersService";
 import {LoginDto} from "../DTOs/LoginDto";
 import {SignUpDto} from "../DTOs/SignUpDto";
 import {AccountModel} from "../models/AccountModel";
 import {createContext, useContext} from "react";
+import jwtDecode, {JwtPayload} from "jwt-decode";
 
 export enum AccountStoreStatus {
     None = "None",
-    Loading = "Loading",
-    Success = "Success",
-    Error = "Error"
+    LoginLoading = "LoginLoading",
+    LoginSuccess = "LoginSuccess",
+    LoginError = "LoginError",
+    SignUpLoading = "SignUpLoading",
+    SignUpSuccess = "SignUpSuccess",
+    SignUpError = "SignUpError"
 }
 
 class Account {
     constructor() {
         makeAutoObservable(this);
+        
         const account = localStorage.getItem("account");
+        
         if (account) {
             this.account = JSON.parse(account) as AccountModel;
         }
@@ -25,79 +31,119 @@ class Account {
     account?: AccountModel;
     status: AccountStoreStatus = AccountStoreStatus.None;
     
-    getAuthJWT = () => {
-        return this.account?.authToken;
+    
+    checkAuth = () => {
+        if (this.account) {
+            try {
+                const jwt = jwtDecode<JwtPayload>(this.account.accessToken);
+                
+                if (jwt.exp) {
+                    if (jwt.exp * 1000 > Date.now()) {
+                        return true;
+                    }
+                    else {
+                        this.logout();
+                        return false;
+                    }
+                }
+                else {
+                    return false
+                }
+            }
+            catch (InvalidTokenError) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
     }
     
     login = (loginData: LoginDto) => {
-        this.status = AccountStoreStatus.Loading;
+        this.status = AccountStoreStatus.LoginLoading;
 
-        accountService.login(loginData).then(
+        return usersService.login(loginData).then(
             (response) => {
                 if (response.status === 200) {
-                    response.json().then(
-                        (loginResult: LoginResultDto) => this.loginSuccess(loginResult),
-                        () => this.loginError()
+                    return response.json().then(
+                        (loginResult: TokensDto) => {
+                            try {
+                                this.loginSuccess(loginResult);
+                                return true;
+                            } catch {
+                                return false;
+                            }
+                        },
+                        () => {
+                            this.loginError()
+                            return false;
+                        }
                     )
                 }
                 else {
                     this.loginError();
+                    return false;
                 }
             },
-            () => this.loginError()
-        )
-    }
-
-    loginSuccess = (loginResult: LoginResultDto) =>  {
-        this.account = {
-            user: loginResult.user,
-            authToken: loginResult.authToken,
-            tokenValidTo: loginResult.tokenValidTo
-        };
-        this.status = AccountStoreStatus.Success;
-    }
-    loginError = () => this.status = AccountStoreStatus.Error;
-    
-    signUp = (signUpData: SignUpDto) => {
-        this.status = AccountStoreStatus.Loading;
-
-        accountService.signUp(signUpData).then(
-            (response) => {
-                if (response.status === 201) {
-                    this.signUpSuccess()
-                }
-                else {
-                    this.signUpError();
-                }
-            },
-            () => this.signUpError()
-        )
-    }
-
-    signUpSuccess = () => this.status = AccountStoreStatus.Success;
-    signUpError = () => this.status = AccountStoreStatus.Error;
-    
-    logout = () => {
-        this.status = AccountStoreStatus.Loading;
-
-        accountService.logout().then(
-            (response) => {
-                if (response.status === 200) {
-                    this.logoutSuccess();
-                } 
-                else {
-                    this.logoutError();
-                }
-            },
-            () => this.logoutError()
+            () => {
+                this.loginError()
+                return false;
+            }
         );
     }
 
-    logoutSuccess = () => {
-        this.account = undefined;
-        this.status = AccountStoreStatus.Success
+    loginSuccess = (loginResult: TokensDto) => {
+        let userId = ""
+        
+        try {
+            const jwt = jwtDecode<JwtPayload>(loginResult.accessToken);
+            
+            console.log(jwt)
+            if (jwt.sub) {
+                userId = jwt.sub;
+            }
+        }
+        catch (InvalidTokenError) {
+            throw new Error();
+        }
+
+        this.account = {
+            userId: userId,
+            accessToken: loginResult.accessToken,
+            refreshToken: loginResult.refreshToken
+        };
+        
+        this.status = AccountStoreStatus.LoginSuccess;
     }
-    logoutError = () => this.status = AccountStoreStatus.Error;
+    loginError = () => this.status = AccountStoreStatus.LoginError;
+    
+    signUp = (signUpData: SignUpDto) => {
+        this.status = AccountStoreStatus.SignUpLoading;
+
+        return usersService.signUp(signUpData).then(
+            (response) => {
+                if (response.status === 201) {
+                    this.signUpSuccess();
+                    return true;
+                }
+                else {
+                    this.signUpError();
+                    return false;
+                }
+            },
+            () => {
+                this.signUpError();
+                return false;
+            }
+        )
+    }
+
+    signUpSuccess = () => this.status = AccountStoreStatus.SignUpSuccess;
+    signUpError = () => this.status = AccountStoreStatus.SignUpError;
+
+    logout = () => {
+        this.account = undefined;
+    }
 }
 
 export const AccountStore = new Account();
@@ -113,8 +159,7 @@ reaction(
     account => {
         if (account) {
             localStorage.setItem("account", JSON.stringify(account));
-        }
-        else {
+        } else {
             localStorage.removeItem("account");
         }
     }

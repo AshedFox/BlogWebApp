@@ -1,0 +1,58 @@
+.container {
+  display: flex;
+  align-items: center;
+}
+.container > *:not(:last-child) {
+  margin-right: 7px;
+}
+.container .mark {
+  display: flex;
+  align-items: center;
+  color: #474C59;
+}
+.container .mark .positive {
+  color: #239423;
+}
+.container .mark .negative {
+  color: #b2493f;
+}
+.container .mark .star {
+  font-size: 24px;
+  line-height: 20px;
+  margin-right: 1px;
+}
+.container .mark .star::before {
+  content: '★';
+}
+.container .mark .text {
+  font-size: 16px;
+  cursor: default;
+}
+.container .plus {
+  color: #474C59;
+  font-size: 22px;
+  line-height: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.container .plus::before {
+  content: '▲';
+}
+.container .plus:hover {
+  color: #A8BDBF;
+}
+.container .minus {
+  color: #474C59;
+  font-size: 22px;
+  line-height: 14px;
+  align-self: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.container .minus::before {
+  content: '▼';
+}
+.container .minus:hover {
+  color: #A8BDBF;
+}
+/*# sourceMappingURL=Mark.module.css.map */

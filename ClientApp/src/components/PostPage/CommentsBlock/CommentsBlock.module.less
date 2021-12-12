@@ -1,0 +1,19 @@
+﻿@import "../../../less/variables";
+
+.container {
+  background-color: @color7;
+  padding: 20px 30px;
+  border-radius: 8px;
+  
+  .title{
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+  
+  .comments_list {
+    & > *:not(:last-child) {
+      margin-bottom: 15px;
+    }
+  }
+}

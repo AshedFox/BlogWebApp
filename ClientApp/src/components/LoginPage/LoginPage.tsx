@@ -21,10 +21,10 @@ const LoginPage = observer(() => {
             passwordHash: CryptoJS.SHA512(password).toString(CryptoJS.enc.Hex),
         }
 
-        await login(loginData);
+        login(loginData);
     }
 
-    if (status === AccountStoreStatus.Loading) {
+    if (status === AccountStoreStatus.LoginLoading) {
         return <Loader/>
     }
 
@@ -49,7 +49,7 @@ const LoginPage = observer(() => {
                             />
                         </div>
                         {
-                            status === AccountStoreStatus.Error &&
+                            status === AccountStoreStatus.LoginError &&
                                 <div className={styles.error}>Возникла ошибка при попытке авторизации</div>
                         }
                         <div className={styles.submit_block}>

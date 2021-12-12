@@ -14,7 +14,6 @@ namespace BlogWebApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class PostsController : ControllerBase
     {
         private readonly PostgresDbContext _context;
@@ -30,30 +29,36 @@ namespace BlogWebApp.Controllers
         [HttpGet]
         public async Task<ActionResult<GetPostsResultDto>> GetPosts(Guid? creatorId, int offset, int limit)
         {
+            List<Post> posts;
+
             if (creatorId is not null)
             {
-                return new GetPostsResultDto()
-                {
-                    Posts = _mapper.Map<List<Post>, List<PostDto>>(await _context.Posts
-                        .Include(post => post.Creator)
-                        .Include(post => post.Creator.Avatar)
-                        .Include(post => post.Cover)
-                        .Where(post => post.Creator.Id == creatorId)
-                        .OrderByDescending(post => post.CreatedAt)
-                        .Skip(offset).Take(limit)
-                        .ToListAsync()),
-                    MaxPage = (int)Math.Ceiling((double)_context.Posts.Count() / limit)
-                };
+                posts = await _context.Posts
+                    .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
+                    .Include(post => post.Cover)
+                    .Include(post => post.Marks)
+                    .Include(post => post.UsersMarked)
+                    .Where(post => post.Creator.Id == creatorId)
+                    .OrderByDescending(post => post.CreatedAt)
+                    .Skip(offset).Take(limit)
+                    .ToListAsync();
             }
+            else
+            {
+                posts = await _context.Posts
+                    .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
+                    .Include(post => post.Cover)
+                    .Include(post => post.Marks)
+                    .Include(post => post.UsersMarked)
+                    .OrderByDescending(post => post.CreatedAt)
+                    .Skip(offset).Take(limit).ToListAsync();
+            }
+
+            var postsDto = _mapper.Map<List<Post>, List<PostDto>>(posts);
 
             return new GetPostsResultDto()
             {
-                Posts = _mapper.Map<List<Post>, List<PostDto>>(await _context.Posts
-                    .Include(post => post.Creator)
-                    .Include(post => post.Creator.Avatar)
-                    .Include(post => post.Cover)
-                    .OrderByDescending(post => post.CreatedAt)
-                    .Skip(offset).Take(limit).ToListAsync()),
+                Posts = postsDto,
                 MaxPage = (int)Math.Ceiling((double)_context.Posts.Count() / limit)
             };
         }
@@ -64,8 +69,11 @@ namespace BlogWebApp.Controllers
         {
             var post = await _context.Posts
                 .Include(post => post.Creator)
+                .ThenInclude(creator => creator.Avatar)
                 .Include(post => post.Cover)
-                .FirstOrDefaultAsync(post1 => post1.Id == id);
+                .Include(post => post.Marks)
+                .Include(post => post.UsersMarked)
+                .FirstOrDefaultAsync(post => post.Id == id);
 
             if (post == null)
             {
@@ -78,6 +86,7 @@ namespace BlogWebApp.Controllers
         // POST: api/Posts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<PostDto>> PostPost([FromBody] PostToAddDto postToAdd)
         {
             var post = _mapper.Map<PostToAddDto, Post>(postToAdd);
@@ -90,17 +99,16 @@ namespace BlogWebApp.Controllers
         // PUT: api/Posts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> PutPost(Guid id, [FromBody] PostToEditDto postToEdit)
         {
-            var post = _mapper.Map<PostToEditDto, Post>(postToEdit);
-
-            if (id != post.Id)
+            if (id != postToEdit.Id)
             {
                 return BadRequest();
             }
-
-            //_context.Attach(post);
-            //_context.Entry(post).Property(post1 => post1.Title).IsModified = true;
+            
+            var post = _mapper.Map<PostToEditDto, Post>(postToEdit);
+            
             _context.Entry(post).State = EntityState.Modified;
 
             try
@@ -124,6 +132,7 @@ namespace BlogWebApp.Controllers
 
         // DELETE: api/Posts/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeletePost(Guid id)
         {
             var post = await _context.Posts.FindAsync(id);

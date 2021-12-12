@@ -1,0 +1,14 @@
+.container {
+  background-color: #fafafa;
+  padding: 20px 30px;
+  border-radius: 8px;
+}
+.container .title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+.container .comments_list > *:not(:last-child) {
+  margin-bottom: 15px;
+}
+/*# sourceMappingURL=CommentsBlock.module.css.map */

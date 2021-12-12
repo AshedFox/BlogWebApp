@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using BlogWebApp.Auth;
 using BlogWebApp.Data;
 using BlogWebApp.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -87,7 +89,7 @@ namespace BlogWebApp
             app.UseSpaStaticFiles();
             
             app.UseRouting();
-
+            
             app.UseAuthentication();
             app.UseAuthorization();
 

@@ -5,7 +5,7 @@ import {useAccountStore} from "../../../../store/AccountStore";
 import { Link } from 'react-router-dom';
 
 const BurgerMenu = () => {
-    const {logout} = useAccountStore();
+    const {logout, account} = useAccountStore();
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -14,7 +14,7 @@ const BurgerMenu = () => {
                 <span/>
             </div>
             <div className={styles.list}>
-                <Link to={routes.myProfile} className={styles.list_item}>Профиль</Link>
+                <Link to={routes.profile + `/${account?.userId}`} className={styles.list_item}>Профиль</Link>
                 <Link to={routes.createPost} className={styles.list_item}>Написать статью</Link>
                 <div className={styles.list_item} onClick={logout}>Выход из аккаунта</div>
             </div>

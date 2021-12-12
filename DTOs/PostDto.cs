@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BlogWebApp.DTOs
 {
@@ -9,7 +10,8 @@ namespace BlogWebApp.DTOs
         public DateTime CreatedAt { get; set; }
         public FileDto Cover { get; set; }
         public string Content { get; set; }
-        public PostUserDto Creator { get; set; }
-
+        public int TotalMark { get; set; }
+        public int MarksCount { get; set; }
+        public ShortUserDto Creator { get; set; }
     }
 }

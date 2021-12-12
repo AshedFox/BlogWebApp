@@ -8,25 +8,17 @@ import styles from "./CreatePostPage.module.css"
 import Dropzone from 'react-dropzone'
 import filesService from "../../services/filesService";
 import {FileModel} from "../../models/FileModel";
-import Loader from "../Loader/Loader";
 
 
 const CreatePostPage = observer(() => {
     const {createPost, status} = usePostsStore();
     const {account, logout} = useAccountStore();
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
+    const [title, setTitle] = useState(localStorage.getItem("newPostTitle") ?? "");
+    const [content, setContent] = useState(localStorage.getItem("newPostContent") ?? "");
     const [file, setFile] = useState<FileModel>();
     const [isReady, setIsReady] = useState<boolean>(true);
     const maxContentLength = 100000;
     
-    useEffect(() => {
-        if (status === PostsStoreStatus.Success) {
-            setTitle("");
-            setContent("");
-            setFile(undefined);
-        }
-    }, [status])
     
     const handleCreatePost = (e: FormEvent) => {
         e.preventDefault();
@@ -38,12 +30,26 @@ const CreatePostPage = observer(() => {
             const postToCreate: PostToAddDto = {
                 title: title,
                 content: content,
-                creatorId: account!.user.id,
+                creatorId: account!.userId,
                 coverId: file?.id
             }
 
-            createPost(postToCreate);
+            createPost(postToCreate).then(() => {
+                setTitle("");
+                setContent("");
+                setFile(undefined);
+            });
         }
+    }
+    
+    const handleSetTitle  = (value: string) => {
+        localStorage.setItem("newPostTitle", value);
+        setTitle(value)
+    }
+
+    const handleSetContent  = (value: string) => {
+        localStorage.setItem("newPostContent", value);
+        setContent(value)
     }
     
     const handleFileDrop = async (file: File) => {
@@ -86,11 +92,11 @@ const CreatePostPage = observer(() => {
                     </Dropzone>
                     <input className={styles.input} name={"title"} value={title} 
                            placeholder={"Заголовок статьи"} maxLength={100}
-                           onChange={(e) => setTitle(e.target.value)}
+                           onChange={(e) => handleSetTitle(e.target.value)}
                     />
                     <textarea className={styles.textarea} name={"content"} value={content} maxLength={maxContentLength}
                               placeholder={"Содержание статьи"}
-                              onChange={(e) => setContent(e.target.value)}
+                              onChange={(e) => handleSetContent(e.target.value)}
                     />
                     {
                         content.length / maxContentLength < 0.9 ?
@@ -99,7 +105,11 @@ const CreatePostPage = observer(() => {
                                 {`${content.length}/${maxContentLength}`}
                             </small>
                     }
-                    <button className={styles.button} type={"submit"} disabled={!isReady}>Создать</button>
+                    <button className={styles.button} type={"submit"} 
+                            disabled={!isReady || title.trim().length <= 0 || content.trim().length <= 0}
+                    >
+                        {"Создать"}
+                    </button>
                 </form>
             </div>
         </Page>

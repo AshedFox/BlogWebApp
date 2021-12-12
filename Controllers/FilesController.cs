@@ -17,7 +17,6 @@ namespace BlogWebApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class FilesController : ControllerBase
     {
         private readonly PostgresDbContext _context;
@@ -51,6 +50,7 @@ namespace BlogWebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult> PostFile(IFormFile file)
         {
             if (file is null || file.Length <= 0 || !file.ContentType.StartsWith("image"))

@@ -1,26 +1,36 @@
 import React from 'react';
 import {Redirect, Route, Switch} from "react-router-dom";
-import {privateRoutes, publicRoutes, routes} from "../../constants/routes";
+import {noAuthRoutes, privateRoutes, publicRoutes, routes} from "../../constants/routes";
 import {observer} from "mobx-react";
 import {useAccountStore} from "../../store/AccountStore";
+import NotFound from "../NotFound/NotFound";
+import AuthVerifier from "../AuthVerifier/AuthVerifier";
 
 const AppRouter = observer (() => {
-    const {account} = useAccountStore();
+    const {checkAuth} = useAccountStore();
 
     return (
-        account && account.tokenValidTo.toString() > new Date().toISOString() ?
-        <Switch>
-            {publicRoutes.map(({path, component}) =>
-                <Route key={path} path={path} component={component} exact/>
-            )}
-            <Redirect to={routes.main}/>
-        </Switch> :
-        <Switch>
-            {privateRoutes.map(({path, component}) =>
-                <Route key={path} path={path} component={component} exact/>
-            )}
-            <Redirect to={routes.login}/>
-        </Switch>
+        <>
+            <Switch>
+                {publicRoutes.map(({path, component}) =>
+                    <Route key={path} path={path} component={component} exact/>
+                )}
+                {
+                    checkAuth() ?
+                        privateRoutes.map(({path, component}) =>
+                            <Route key={path} path={path} component={component} exact/>) :
+                        noAuthRoutes.map(({path, component}) =>
+                            <Route key={path} path={path} component={component} exact/>)
+                }
+                {
+                    checkAuth() ?
+                        noAuthRoutes.map(({path}) => <Redirect from={path} to={routes.main}/>) :
+                        privateRoutes.map(({path}) => <Redirect from={path} to={routes.main}/>)
+                }
+                <Route component={NotFound}/>
+            </Switch>
+            <AuthVerifier/>
+        </>
     );
 });
 

@@ -1,37 +1,49 @@
 import React, {FormEvent, useEffect, useState} from 'react';
 import {observer} from "mobx-react";
 import {PostsStoreStatus, usePostsStore} from "../../store/PostsStore";
-import PostMini from "./PostMini/PostMini";
 import Page from "../Page/Page";
 import styles from "./PostsPage.module.css"
-import {useParams} from "react-router-dom";
+import {generatePath, useHistory, useRouteMatch} from "react-router-dom";
 import Loader from "../Loader/Loader";
+import PostMini from "./PostMini/PostMini";
+
+type PostsPageParams = {
+    page?: string
+}
 
 const PostsPage = observer(() => {
     const {posts, currentPage, countPerPage, maxPage, 
-        getPosts, setNextPage, setPrevPage, setPage, status} = usePostsStore();
-    const {id} = useParams<{id:string}>();
-    const [newPage, setNewPage] = useState((currentPage + 1).toString());
+        getPosts, setPage, status} = usePostsStore();
+    const history = useHistory();
+    const match = useRouteMatch<PostsPageParams>();
+    const [newPage, setNewPage] = useState("");
     
     useEffect(() => {
-        return () => {
-            setPage(0);
-        }
-    }, [])
+        const page = match.params.page ? 
+            Number.isNaN(Number.parseInt(match.params.page)) ? 
+                0 : 
+                Number.parseInt(match.params.page) - 1 
+            : 0;
+        
+        setPage(page);
+        getPosts(page, countPerPage)
+    }, [match.params.page])
     
-    useEffect(() => {
-        getPosts(currentPage, countPerPage);
-        setNewPage((currentPage + 1).toString());
-    }, [currentPage, countPerPage])
-    
-    const handlePageChange = (e:FormEvent) => {
+    const handlePageChange = (e: FormEvent) => {
         e.preventDefault();
-        console.log(newPage);
         
         const page = Number.parseInt(newPage)
         if (!Number.isNaN(page)) {
-            setPage(page - 1);
+            if (page - 1 != currentPage) {
+                handleSetPage(page - 1);
+            }
         }
+    }
+    
+    const handleSetPage = (page: number) => {
+        history.push({
+            pathname: generatePath(match.path, {page: (page + 1).toString()})
+        })
     }
     
     return (
@@ -39,10 +51,9 @@ const PostsPage = observer(() => {
             <div className={styles.container}>
                 <div className={styles.content_container}>
                 {
-                    status === PostsStoreStatus.Loading ?
+                    status === PostsStoreStatus.GetPostsLoading ?
                         <Loader/> :
-
-                        status === PostsStoreStatus.Error ?
+                        status === PostsStoreStatus.GetPostsError ?
                             <div>Error!</div> :
                             <>
                                 <div className={styles.list}>
@@ -50,7 +61,7 @@ const PostsPage = observer(() => {
                                 </div>
                                 <div className={styles.pagination_container}>
                                     <button className={styles.button} disabled={currentPage <= 0}
-                                            onClick={setPrevPage}>
+                                            onClick={() => handleSetPage(currentPage - 1)}>
                                         {"<"}
                                     </button>
                                     <div className={styles.page_swap_container}>
@@ -67,7 +78,7 @@ const PostsPage = observer(() => {
                                         <div>/ {maxPage}</div>
                                     </div>
                                     <button className={styles.button} disabled={currentPage >= maxPage - 1}
-                                            onClick={setNextPage}>
+                                            onClick={() => handleSetPage(currentPage + 1)}>
                                         {">"}
                                     </button>
                                 </div>

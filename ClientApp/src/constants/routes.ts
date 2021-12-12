@@ -6,20 +6,17 @@ import PostPage from "../components/PostPage/PostPage";
 import CreatePostPage from "../components/CreatePostPage/CreatePostPage";
 import ProfilePage from "../components/ProfilePage/ProfilePage";
 
-//TODO: Revise routing (main, posts, post and other pages most likely should be available without login)
-
 export const routes = {
     login: "/login",
     signUp: "/signUp",
-    myProfile: "/profile",
-    profile: "/profile/:id",
+    profile: "/profile",
     main: "/",
     posts: "/posts",
-    post: "/posts/:id",
-    createPost: "/posts/create"
+    post: "/post",
+    createPost: "/create"
 }
 
-export const privateRoutes = [
+export const noAuthRoutes = [
     {
         path: routes.login,
         component: LoginPage
@@ -27,32 +24,31 @@ export const privateRoutes = [
     {
         path: routes.signUp,
         component: SignUpPage
-    }
+    },
 ]
 
 export const publicRoutes = [
     {
-        path: routes.myProfile,
-        component: ProfilePage
+        path: routes.post + "/:id",
+        component: PostPage
     },
     {
-        path: routes.profile,
-        component: undefined
+        path: routes.profile + "/:id",
+        component: ProfilePage
     },
     {
         path: routes.main,
         component: MainPage
     },
     {
-        path: routes.posts,
+        path: routes.posts + "/:page?",
         component: PostsPage
     },
+]
+
+export const privateRoutes = [
     {
         path: routes.createPost,
         component: CreatePostPage
-    },
-    {
-        path: routes.post,
-        component: PostPage
     },
 ]

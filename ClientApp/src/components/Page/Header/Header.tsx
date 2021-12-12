@@ -3,8 +3,12 @@ import styles from './Header.module.css'
 import BurgerMenu from "./BurgerMenu/BurgerMenu";
 import {routes} from "../../../constants/routes";
 import { Link } from 'react-router-dom';
+import {observer} from "mobx-react";
+import {useAccountStore} from "../../../store/AccountStore";
 
-const Header = () => {
+const Header = observer(() => {
+    const {checkAuth} = useAccountStore();
+
     return (
         <div className={styles.header}>
             <div className={styles.container}>
@@ -15,11 +19,15 @@ const Header = () => {
                             <Link className={styles.link} to={routes.posts}>Статьи</Link>
                         </div>
                     </nav>
-                    <BurgerMenu/>
+                    {
+                        checkAuth() ?
+                            <BurgerMenu/> : 
+                            <Link className={styles.link} to={routes.login}>Войти</Link>
+                    }
                 </div>
             </div>
         </div>
     );
-};
+});
 
 export default Header;

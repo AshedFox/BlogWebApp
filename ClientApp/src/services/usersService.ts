@@ -1,7 +1,7 @@
 import {SignUpDto} from "../DTOs/SignUpDto";
 import {LoginDto} from "../DTOs/LoginDto";
 
-const apiUrl = window.location.origin + "/api/account";
+const apiUrl = window.location.origin + "/api/users";
 
 const signUp = async (signUpData: SignUpDto) => {
     const headers = new Headers();
@@ -29,19 +29,23 @@ const login = async (loginData: LoginDto) => {
     return await fetch(request);
 }
 
-const logout = async () => {
+const refreshToken = async (refreshToken: string) => {
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
     const options:RequestInit = {
-        method: "GET",
+        method: "POST",
+        headers,
+        body: refreshToken
     }
-    const request = new Request(apiUrl + "/logout", options);
+    const request = new Request(apiUrl + "/refreshToken", options);
 
     return await fetch(request);
 }
 
-const accountsService = {
+const usersService = {
     signUp,
     login,
-    logout
+    refreshToken
 }
 
-export default accountsService;
+export default usersService;

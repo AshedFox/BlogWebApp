@@ -27,6 +27,11 @@ namespace BlogWebApp.Models
         public virtual Guid? AvatarId { get; set; }
         public virtual File Avatar { get; set; }
         
-        public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<Post> CreatedPosts { get; set; } = new List<Post>();
+        public virtual ICollection<Post> MarkedPosts { get; set; } = new List<Post>();
+        public virtual ICollection<PostMark> PostsMarks { get; set; } = new List<PostMark>();    
+        public virtual ICollection<Comment> CreatedComments { get; set; } = new List<Comment>();
+        public virtual ICollection<Comment> MarkedComments { get; set; } = new List<Comment>();
+        public virtual ICollection<CommentMark> CommentsMarks { get; set; } = new List<CommentMark>();    
     }
 }

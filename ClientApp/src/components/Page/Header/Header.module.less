@@ -37,18 +37,21 @@
         .links_list {
           display: flex;
           align-items: center;
-          font-size: 18px;
-          font-weight: 500;
 
-          .link {
+          &> *:not(:last-child) {
             margin-right: 36px;
-            transition: 0.25s;
-            border-bottom: 2px solid transparent;
-
-            &:hover{
-              border-bottom: 2px solid @textColor2;
-            }
           }
+        }
+      }
+
+      .link {
+        transition: 0.25s;
+        font-size: 18px;
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+
+        &:hover{
+          border-bottom: 2px solid @textColor2;
         }
       }
     }

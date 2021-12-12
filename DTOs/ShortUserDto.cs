@@ -2,7 +2,7 @@
 
 namespace BlogWebApp.DTOs
 {
-    public class PostUserDto
+    public class ShortUserDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
