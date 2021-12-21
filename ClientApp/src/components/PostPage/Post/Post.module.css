@@ -45,11 +45,6 @@
   font-weight: 600;
   line-height: initial;
   margin-bottom: 10px;
-  cursor: pointer;
-  transition: 0.5s;
-}
-.container .main .title:hover {
-  color: #474C59;
 }
 .container .main .cover_container {
   width: 100%;
@@ -64,6 +59,7 @@
 .container .main .short_desc {
   font-size: 15px;
   white-space: break-spaces;
+  hyphens: auto;
 }
 .container .footer {
   display: flex;

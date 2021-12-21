@@ -34,7 +34,7 @@ const PostsPage = observer(() => {
         
         const page = Number.parseInt(newPage)
         if (!Number.isNaN(page)) {
-            if (page - 1 != currentPage) {
+            if (page - 1 !== currentPage) {
                 handleSetPage(page - 1);
             }
         }
@@ -51,7 +51,7 @@ const PostsPage = observer(() => {
             <div className={styles.container}>
                 <div className={styles.content_container}>
                 {
-                    status === PostsStoreStatus.GetPostsLoading ?
+                    status === PostsStoreStatus.GetPostsLoading || !posts ?
                         <Loader/> :
                         status === PostsStoreStatus.GetPostsError ?
                             <div>Error!</div> :
@@ -70,8 +70,7 @@ const PostsPage = observer(() => {
                                                 <input className={styles.input} value={newPage}
                                                        type={"number"} min={1} max={maxPage}
                                                        placeholder={(currentPage + 1).toString()}
-                                                       onChange={(e) => setNewPage(e.target.value)}>
-                                                </input>
+                                                       onChange={(e) => setNewPage(e.target.value)}/>
                                                 <button type={"submit"} hidden/>
                                             </form>
                                         </div>

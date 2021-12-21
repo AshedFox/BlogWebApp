@@ -1,6 +1,7 @@
 .container {
   max-width: 1096px;
   margin: 0 auto;
+  height: calc(100vh - 56px);
 }
 @media (max-width: 1108px) {
   .container {

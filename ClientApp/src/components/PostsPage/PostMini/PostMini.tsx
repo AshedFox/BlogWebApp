@@ -17,7 +17,7 @@ const PostMini = ({post}:PostMiniProps) => {
                     {
                         post.creator.avatar &&
                         <div className={styles.creator_avatar}>
-                            <img className={styles.image} src={post.creator.avatar.url}/>
+                            <img className={styles.image} src={post.creator.avatar.url} alt=""/>
                         </div>
                     }
                     <div>{post.creator.name}</div>

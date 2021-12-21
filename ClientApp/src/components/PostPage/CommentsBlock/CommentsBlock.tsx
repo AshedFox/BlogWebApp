@@ -1,8 +1,7 @@
-﻿import React, {FC, RefAttributes, RefObject, useEffect} from 'react';
+﻿import React, {FC} from 'react';
 import {CommentModel} from "../../../models/CommentModel";
 import Comment from "./Comment/Comment";
 import styles from "./CommentsBlock.module.css";
-import {usePostsStore} from "../../../store/PostsStore";
 
 type CommentsBlockProps = {
     comments: CommentModel[]
@@ -14,7 +13,7 @@ const CommentsBlock: FC<CommentsBlockProps> =  ({comments}) => {
             <div className={styles.title}>Комментарии({comments ? comments.length : 0})</div>
             <div className={styles.comments_list}>
                 {
-                    comments?.map((value) => <Comment comment={value} replyLevel={0}/>)
+                    comments?.map((value) => <Comment key={value.id} comment={value} replyLevel={0}/>)
                 }
             </div>
         </div>

@@ -6,6 +6,7 @@ import {LoginDto} from "../../DTOs/LoginDto";
 import {observer} from "mobx-react";
 import Loader from "../Loader/Loader";
 import {AccountStoreStatus, useAccountStore} from "../../store/AccountStore";
+import Page from "../Page/Page";
 
 const LoginPage = observer(() => {
     const [email, setEmail] = useState("");
@@ -24,55 +25,56 @@ const LoginPage = observer(() => {
         login(loginData);
     }
 
-    if (status === AccountStoreStatus.LoginLoading) {
-        return <Loader/>
-    }
-
     return (
-        <>
+        <Page>
             <div className={styles.container}>
-                <div className={styles.content}>
-                    <form className={styles.form}
-                          onSubmit={(e:SyntheticEvent)=>submitForm(e)}
-                    >
-                        <legend className={styles.title}>{"Авторизация"}</legend>
-                        <div className={styles.fields}>
-                            <input className={styles.input} value={email}
-                                   name={"email"} type={"text"}
-                                   placeholder={"Email"} maxLength={320}
-                                   onChange={e => setEmail(e.target.value)}
-                            />
-                            <input className={styles.input} value={password}
-                                   name={"password"} type={"password"} maxLength={64}
-                                   placeholder={"Пароль"} autoComplete={"currentPassword"}
-                                   onChange={e => setPassword(e.target.value)}
-                            />
+                {
+                    status === AccountStoreStatus.LoginLoading ?
+                        <Loader/> :
+                        <div className={styles.content}>
+                            <div className={styles.content_container}>
+
+                                <form className={styles.form} onSubmit={(e: SyntheticEvent) => submitForm(e)}>
+                                    <legend className={styles.title}>{"Авторизация"}</legend>
+                                    <div className={styles.fields}>
+                                        <input className={styles.input} value={email}
+                                               name={"email"} type={"text"} required
+                                               placeholder={"Email"} maxLength={320} minLength={5}
+                                               onChange={e => setEmail(e.target.value)}
+                                        />
+                                        <input className={styles.input} value={password} required
+                                               name={"password"} type={"password"} maxLength={64} minLength={4}
+                                               placeholder={"Пароль"} autoComplete={"currentPassword"}
+                                               onChange={e => setPassword(e.target.value)}
+                                        />
+                                    </div>
+                                    {
+                                        status === AccountStoreStatus.LoginError &&
+                                        <div className={styles.error}>Возникла ошибка при попытке авторизации</div>
+                                    }
+                                    <div className={styles.submit_block}>
+                                        <a className={styles.link} href={routes.signUp}>
+                                            {"Нет аккаунта?"}
+                                        </a>
+                                        <button className={styles.button} type={"submit"}>
+                                            {"Войти"}
+                                        </button>
+                                    </div>
+                                </form>
+                                <div className={styles.separator}>
+                                    <div className={styles.line}/>
+                                    <div className={styles.text}>{"Или войдите с помощью"}</div>
+                                    <div className={styles.line}/>
+                                </div>
+                                <div className={styles.additional_auth}>
+                                    <div className={`${styles.button} ${styles.vk_button}`}>{"Вконтакте"}</div>
+                                    <div className={`${styles.button} ${styles.google_button}`}>{"Google"}</div>
+                                </div>
+                            </div>
                         </div>
-                        {
-                            status === AccountStoreStatus.LoginError &&
-                                <div className={styles.error}>Возникла ошибка при попытке авторизации</div>
-                        }
-                        <div className={styles.submit_block}>
-                            <a className={styles.link} href={routes.signUp}>
-                                {"Нет аккаунта?"}
-                            </a>
-                            <button className={styles.button} type={"submit"}>
-                                {"Войти"}
-                            </button>
-                        </div>
-                    </form>
-                    <div className={styles.separator}>
-                        <div className={styles.line}/>
-                        <div className={styles.text}>{"Или войдите с помощью"}</div>
-                        <div className={styles.line}/>
-                    </div>
-                    <div className={styles.additional_auth}>
-                        <div className={ `${styles.button} ${styles.vk_button}`}>{"Вконтакте"}</div>
-                        <div className={`${styles.button} ${styles.google_button}`}>{"Google"}</div>
-                    </div>
-                </div>
+                }
             </div>
-        </>
+        </Page>
     );
 });
 

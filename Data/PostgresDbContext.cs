@@ -10,6 +10,8 @@ namespace BlogWebApp.Data
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<File> Files { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         public PostgresDbContext(DbContextOptions<PostgresDbContext> options) 
             :base(options) { }
 
@@ -33,6 +35,7 @@ namespace BlogWebApp.Data
                 .HasDefaultValueSql("now()");
             modelBuilder.Entity<Comment>().ToTable("Comments");
             modelBuilder.Entity<File>().Property(file => file.Id).HasDefaultValueSql("uuid_generate_v4()");
+            modelBuilder.Entity<RefreshToken>().Property(token => token.IsActive).HasDefaultValue(true);
 
             modelBuilder
                 .Entity<Post>()

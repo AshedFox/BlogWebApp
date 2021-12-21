@@ -6,10 +6,10 @@ const AuthVerifier = observer(() => {
     const history = useHistory();
     const {checkAuth} = useAccountStore();
 
-    history.listen(() => {
-        checkAuth();
+    history.listen(async () => {
+        await checkAuth();
     });
-
+    
     return <div/>;
 });
 

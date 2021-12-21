@@ -87,7 +87,7 @@ namespace BlogWebApp.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize]
-        public async Task<ActionResult<PostDto>> PostPost([FromBody] PostToAddDto postToAdd)
+        public async Task<ActionResult<PostDto>> PostPost(PostToAddDto postToAdd)
         {
             var post = _mapper.Map<PostToAddDto, Post>(postToAdd);
             _context.Posts.Add(post);
@@ -100,7 +100,7 @@ namespace BlogWebApp.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> PutPost(Guid id, [FromBody] PostToEditDto postToEdit)
+        public async Task<IActionResult> PutPost(Guid id, PostToEditDto postToEdit)
         {
             if (id != postToEdit.Id)
             {

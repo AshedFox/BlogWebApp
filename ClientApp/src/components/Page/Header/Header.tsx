@@ -7,8 +7,8 @@ import {observer} from "mobx-react";
 import {useAccountStore} from "../../../store/AccountStore";
 
 const Header = observer(() => {
-    const {checkAuth} = useAccountStore();
-
+    const {account} = useAccountStore();
+    
     return (
         <div className={styles.header}>
             <div className={styles.container}>
@@ -20,7 +20,7 @@ const Header = observer(() => {
                         </div>
                     </nav>
                     {
-                        checkAuth() ?
+                        account ?
                             <BurgerMenu/> : 
                             <Link className={styles.link} to={routes.login}>Войти</Link>
                     }

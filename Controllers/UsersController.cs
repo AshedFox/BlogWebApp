@@ -45,14 +45,26 @@ namespace BlogWebApp.Controllers
             {
                 return Unauthorized();
             }
-            
+
+            var refreshToken = TokensGenerator.GenerateRefreshToken();
+
+            _context.RefreshTokens.Add(new RefreshToken()
+            {
+                Id = Guid.Parse(refreshToken),
+                UserId = user.Id,
+                ExpiredAt = DateTime.UtcNow.AddDays(AuthOptions.RefreshTokenLifetime)
+            });
+            await _context.SaveChangesAsync();
+
+            var accessToken = TokensGenerator.GenerateAccessToken(user.Id.ToString());
+
             var tokensDto = new TokensDto()
             {
-                AccessToken = TokensGenerator.GenerateAccessToken(user.Id.ToString()),
-                RefreshToken = TokensGenerator.GenerateRefreshToken()
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
             };
 
-            return tokensDto;
+            return Ok(tokensDto);
         }
 
         // POST: api/Users/SignUp
@@ -66,7 +78,7 @@ namespace BlogWebApp.Controllers
             {
                 return Challenge();
             }
-            
+
             var salt = GenerateSalt(64);
 
             var userToAdd = _mapper.Map<SignUpDto, User>(signUpDto);
@@ -76,14 +88,59 @@ namespace BlogWebApp.Controllers
             _context.Users.Add(userToAdd);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new {id = userToAdd.Id}, _mapper.Map<User, UserDto>(userToAdd));
+            return CreatedAtAction("GetUser", new { id = userToAdd.Id }, _mapper.Map<User, UserDto>(userToAdd));
         }
 
         // POST: api/User/RefreshToken
         [HttpPost("[action]")]
-        public async Task<ActionResult<TokensDto>> RefreshToken(string refreshToken)
+        public async Task<ActionResult<TokensDto>> RefreshToken([FromBody] string refreshToken)
         {
-            throw new NotImplementedException();
+            if (refreshToken is null)
+            {
+                return BadRequest();
+            }
+
+            var token = await _context.RefreshTokens.FindAsync(Guid.Parse(refreshToken));
+
+            if (token is null)
+            {
+                return NotFound();
+            }
+
+            if (!token.IsActive)
+            {
+                return Unauthorized();
+            }
+
+            token.IsActive = false;
+            _context.Entry(token).State = EntityState.Modified;
+            
+            if (token.ExpiredAt.CompareTo(DateTime.UtcNow) < 0)
+            {
+                await _context.SaveChangesAsync();
+
+                return Unauthorized();
+            }
+
+            var newToken = TokensGenerator.GenerateRefreshToken();
+
+            _context.RefreshTokens.Add(new RefreshToken()
+            {
+                Id = Guid.Parse(newToken),
+                UserId = token.UserId,
+                ExpiredAt = DateTime.UtcNow.AddDays(AuthOptions.RefreshTokenLifetime)
+            });
+            await _context.SaveChangesAsync();
+
+            var accessToken = TokensGenerator.GenerateAccessToken(token.UserId.ToString());
+
+            var tokensDto = new TokensDto()
+            {
+                AccessToken = accessToken,
+                RefreshToken = newToken
+            };
+
+            return Ok(tokensDto);
         }
 
         // GET: api/Users
@@ -116,7 +173,6 @@ namespace BlogWebApp.Controllers
         }
 
         // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> PutUser(Guid id, [FromBody] User user)

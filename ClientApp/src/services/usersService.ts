@@ -1,5 +1,6 @@
 import {SignUpDto} from "../DTOs/SignUpDto";
 import {LoginDto} from "../DTOs/LoginDto";
+import {makeAuthHeader} from "../helpers/authHeader";
 
 const apiUrl = window.location.origin + "/api/users";
 
@@ -35,9 +36,31 @@ const refreshToken = async (refreshToken: string) => {
     const options:RequestInit = {
         method: "POST",
         headers,
-        body: refreshToken
+        body: `"${refreshToken}"`
     }
     const request = new Request(apiUrl + "/refreshToken", options);
+
+    return await fetch(request);
+}
+
+const getUsers = async () => {
+    const options: RequestInit = {
+        method: "GET",
+        headers: makeAuthHeader()
+    }
+
+    const request = new Request(apiUrl, options);
+
+    return await fetch(request);
+}
+
+const getUser = async (id: string) => {
+    const options: RequestInit = {
+        method: "GET",
+        headers: makeAuthHeader()
+    }
+
+    const request = new Request(apiUrl + "/" + id, options);
 
     return await fetch(request);
 }
@@ -45,7 +68,9 @@ const refreshToken = async (refreshToken: string) => {
 const usersService = {
     signUp,
     login,
-    refreshToken
+    refreshToken,
+    getUsers,
+    getUser
 }
 
 export default usersService;

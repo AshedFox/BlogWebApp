@@ -1,0 +1,33 @@
+﻿@import "../../less/variables";
+
+.container{
+  padding: 15px 0;
+  height: 100%;
+  
+  .content {
+    height: 100%;
+    
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    .error404 {
+      @media (max-width: @md3) {
+        font-size: 128px;
+      }
+      
+      font-size: 256px;
+      font-weight: 600;
+      line-height: initial;
+    }
+    .text {
+      @media (max-width: @md3) {
+        font-size: 32px;
+      }
+      
+      font-size: 42px;
+      text-align: center;
+    }
+  }
+}

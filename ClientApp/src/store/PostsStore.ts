@@ -61,10 +61,12 @@ class Posts {
     setPage = (page: number) => this.currentPage = page;
     setCurrentPost = (post?: PostModel) => this.currentPost =  post;
     
-    getPosts = (currentPage: number, count: number, creatorId?: string) => {
+    getPosts = async (currentPage: number, count: number, creatorId?: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.GetPostsLoading;
 
-        return postsService.getPosts(currentPage * count, count, creatorId).then(
+        return await postsService.getPosts(currentPage * count, count, creatorId).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
@@ -72,8 +74,7 @@ class Posts {
                             if (currentPage <= getPostsResult.maxPage) {
                                 this.getPostsSuccess(getPostsResult)
                                 return getPostsResult;
-                            }
-                            else {
+                            } else {
                                 this.getPostsError();
                                 return null;
                             }
@@ -83,8 +84,7 @@ class Posts {
                             return null;
                         }
                     )
-                }
-                else {
+                } else {
                     this.getPostsError()
 
                     if (response.status === 401) {
@@ -100,17 +100,19 @@ class Posts {
         );
     }
     
-    getPostsSuccess = (getPostsResult: GetPostsResultDto) => {
+    private getPostsSuccess = (getPostsResult: GetPostsResultDto) => {
         this.posts = getPostsResult.posts;
         this.maxPage = getPostsResult.maxPage;
         this.status = PostsStoreStatus.GetPostsSuccess;
     }
-    getPostsError = () => this.status = PostsStoreStatus.GetPostsError;
+    private getPostsError = () => this.status = PostsStoreStatus.GetPostsError;
 
-    getPost = (id: string) => {
+    getPost = async (id: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.GetPostLoading;
 
-        return postsService.getPost(id).then(
+        return await postsService.getPost(id).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
@@ -123,8 +125,7 @@ class Posts {
                             return null;
                         }
                     )
-                }
-                else {
+                } else {
                     this.getPostError()
 
                     if (response.status === 401) {
@@ -139,16 +140,18 @@ class Posts {
             }
         );
     }
-    getPostSuccess = (post: PostModel) => {
+    private getPostSuccess = (post: PostModel) => {
         this.currentPost = post;
         this.status = PostsStoreStatus.GetPostSuccess;
     }
-    getPostError = () => this.status = PostsStoreStatus.GetPostError;
+    private getPostError = () => this.status = PostsStoreStatus.GetPostError;
 
-    createPost = (postToAdd: PostToAddDto) => {
+    createPost = async (postToAdd: PostToAddDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.CreatePostLoading;
 
-        return postsService.postPost(postToAdd).then(
+        return await postsService.postPost(postToAdd).then(
             (response) => {
                 if (response.status === 201) {
                     return response.json().then(
@@ -161,8 +164,7 @@ class Posts {
                             return null;
                         }
                     )
-                }
-                else {
+                } else {
                     this.createPostError();
 
                     if (response.status === 401) {
@@ -177,18 +179,19 @@ class Posts {
             }
         );
     }
-    createPostSuccess = () => this.status = PostsStoreStatus.CreatePostSuccess;
-    createPostError = () => this.status = PostsStoreStatus.CreatePostError;
+    private createPostSuccess = () => this.status = PostsStoreStatus.CreatePostSuccess;
+    private createPostError = () => this.status = PostsStoreStatus.CreatePostError;
     
-    editPost = (id: string, postToEdit: PostToEditDto) => {
+    editPost = async (id: string, postToEdit: PostToEditDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.EditPostLoading
 
-        return postsService.putPost(id, postToEdit).then(
+        await postsService.putPost(id, postToEdit).then(
             (response) => {
                 if (response.status === 204) {
                     this.editPostSuccess();
-                }
-                else {
+                } else {
                     this.editPostError();
 
                     if (response.status === 401) {
@@ -201,20 +204,21 @@ class Posts {
             }
         );
     }
-    editPostSuccess = () => this.status = PostsStoreStatus.EditPostSuccess;
-    editPostError = () => this.status = PostsStoreStatus.EditPostError;
+    private editPostSuccess = () => this.status = PostsStoreStatus.EditPostSuccess;
+    private editPostError = () => this.status = PostsStoreStatus.EditPostError;
     
-    deletePost = (id: string) => {
+    deletePost = async (id: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.DeletePostLoading
 
-        return postsService.deletePost(id).then(
+        await postsService.deletePost(id).then(
             (response) => {
                 if (response.status === 204) {
                     this.deletePostSuccess();
-                }
-                else {
+                } else {
                     this.deletePostError();
-                    
+
                     if (response.status === 401) {
                         AccountStore.logout();
                     }
@@ -225,12 +229,12 @@ class Posts {
             }
         );
     }
-    deletePostSuccess = () => this.status = PostsStoreStatus.DeletePostSuccess;
-    deletePostError = () => this.status = PostsStoreStatus.DeletePostError;
+    private deletePostSuccess = () => this.status = PostsStoreStatus.DeletePostSuccess;
+    private deletePostError = () => this.status = PostsStoreStatus.DeletePostError;
     
     // comments
     addCommentToCurrentPost = (comment:CommentModel) => {
-        if (comment.post && comment.post.id && comment.post.id == this.currentPost?.id) {
+        if (comment.post && comment.post.id && comment.post.id === this.currentPost?.id) {
             this.currentPost.comments = [...this.currentPost.comments, comment].sort(
                 (a, b) =>
                     new Date(a.createdAt).valueOf() - new Date(b.createdAt).valueOf()
@@ -238,10 +242,12 @@ class Posts {
         }
     }
     
-    getComments = (postId?: string) => {
+    getComments = async (postId?: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.GetCommentsLoading;
-        
-        return commentsService.getComments(postId).then(
+
+        return await commentsService.getComments(postId).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
@@ -254,8 +260,7 @@ class Posts {
                             return null;
                         }
                     )
-                }
-                else {
+                } else {
                     this.getCommentsError()
 
                     if (response.status === 401) {
@@ -270,18 +275,20 @@ class Posts {
             }
         );
     }
-    getCommentsSuccess = (comments: CommentModel[]) => {
+    private getCommentsSuccess = (comments: CommentModel[]) => {
         if (this.currentPost) {
             this.currentPost.comments = comments;
         }
         this.status = PostsStoreStatus.GetCommentsSuccess;
     }
-    getCommentsError = () => this.status = PostsStoreStatus.GetCommentsError;
+    private getCommentsError = () => this.status = PostsStoreStatus.GetCommentsError;
     
-    getComment = (id: string) => {
+    getComment = async (id: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.GetCommentLoading;
 
-        return commentsService.getComment(id).then(
+        return await commentsService.getComment(id).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
@@ -294,8 +301,7 @@ class Posts {
                             return null;
                         }
                     )
-                }
-                else {
+                } else {
                     this.getCommentError()
 
                     if (response.status === 401) {
@@ -310,13 +316,15 @@ class Posts {
             }
         );
     }
-    getCommentSuccess = () => this.status = PostsStoreStatus.GetCommentSuccess;
-    getCommentError = () => this.status = PostsStoreStatus.GetCommentError;
+    private getCommentSuccess = () => this.status = PostsStoreStatus.GetCommentSuccess;
+    private getCommentError = () => this.status = PostsStoreStatus.GetCommentError;
     
-    createComment = (commentToAdd: CommentToAddDto) => {
+    createComment = async (commentToAdd: CommentToAddDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+
         this.status = PostsStoreStatus.CreateCommentLoading;
 
-        return commentsService.postComment(commentToAdd).then(
+        return await commentsService.postComment(commentToAdd).then(
             (response) => {
                 if (response.status === 201) {
                     return response.json().then(
@@ -329,8 +337,7 @@ class Posts {
                             return null;
                         }
                     )
-                }
-                else {
+                } else {
                     this.createCommentError();
 
                     if (response.status === 401) {
@@ -345,13 +352,15 @@ class Posts {
             }
         );
     }
-    createCommentSuccess = () => this.status = PostsStoreStatus.CreateCommentSuccess;
-    createCommentError = () => this.status = PostsStoreStatus.CreateCommentError;
+    private createCommentSuccess = () => this.status = PostsStoreStatus.CreateCommentSuccess;
+    private createCommentError = () => this.status = PostsStoreStatus.CreateCommentError;
     
-    editComment = (id: string, commentToEdit: CommentToEditDto) => {
+    editComment = async (id: string, commentToEdit: CommentToEditDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+        
         this.status = PostsStoreStatus.EditCommentLoading;
         
-        return commentsService.putComment(id, commentToEdit).then(
+        await commentsService.putComment(id, commentToEdit).then(
             (response) => {
                 if (response.status === 204) {
                     this.editCommentSuccess();
@@ -369,13 +378,15 @@ class Posts {
             }
         );
     }
-    editCommentSuccess = () => this.status = PostsStoreStatus.EditCommentSuccess;
-    editCommentError = () => this.status = PostsStoreStatus.EditCommentError;
+    private editCommentSuccess = () => this.status = PostsStoreStatus.EditCommentSuccess;
+    private editCommentError = () => this.status = PostsStoreStatus.EditCommentError;
     
-    deleteComment = (id: string) => {
+    deleteComment = async (id: string) => {
+        await AccountStore.refreshTokenIfNeeded()
+
         this.status = PostsStoreStatus.DeleteCommentLoading;
 
-        return commentsService.deleteComment(id).then(
+        await commentsService.deleteComment(id).then(
             (response) => {
                 if (response.status === 204) {
                     this.deleteCommentSuccess();
@@ -393,8 +404,8 @@ class Posts {
             }
         );
     }
-    deleteCommentSuccess = () => this.status = PostsStoreStatus.DeleteCommentSuccess;
-    deleteCommentError = () => this.status = PostsStoreStatus.DeleteCommentError;
+    private deleteCommentSuccess = () => this.status = PostsStoreStatus.DeleteCommentSuccess;
+    private deleteCommentError = () => this.status = PostsStoreStatus.DeleteCommentError;
 }
 
 export const PostsStore = new Posts();

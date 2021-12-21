@@ -1,4 +1,4 @@
-﻿import React, {FormEvent, useEffect, useState} from 'react';
+﻿import React, {FormEvent, useState} from 'react';
 import Page from "../Page/Page";
 import {observer} from "mobx-react";
 import {PostsStoreStatus, usePostsStore} from "../../store/PostsStore";
@@ -9,6 +9,7 @@ import Dropzone from 'react-dropzone'
 import filesService from "../../services/filesService";
 import {FileModel} from "../../models/FileModel";
 
+const maxContentLength = 100000;
 
 const CreatePostPage = observer(() => {
     const {createPost, status} = usePostsStore();
@@ -17,8 +18,6 @@ const CreatePostPage = observer(() => {
     const [content, setContent] = useState(localStorage.getItem("newPostContent") ?? "");
     const [file, setFile] = useState<FileModel>();
     const [isReady, setIsReady] = useState<boolean>(true);
-    const maxContentLength = 100000;
-    
     
     const handleCreatePost = (e: FormEvent) => {
         e.preventDefault();
@@ -38,16 +37,20 @@ const CreatePostPage = observer(() => {
                 setTitle("");
                 setContent("");
                 setFile(undefined);
+
+                localStorage.removeItem("newPostTitle");
+                localStorage.removeItem("newPostContent");
+
             });
         }
     }
     
-    const handleSetTitle  = (value: string) => {
+    const handleSetTitle = (value: string) => {
         localStorage.setItem("newPostTitle", value);
         setTitle(value)
     }
 
-    const handleSetContent  = (value: string) => {
+    const handleSetContent = (value: string) => {
         localStorage.setItem("newPostContent", value);
         setContent(value)
     }
@@ -81,7 +84,7 @@ const CreatePostPage = observer(() => {
                                     <input {...getInputProps()} accept={"image/*"}/>
                                     {
                                         file ?
-                                            <img className={styles.cover_preview} src={file?.url}/> :
+                                            <img className={styles.cover_preview} src={file.url} alt=""/> :
                                             <div className={styles.default_text}>
                                                 {"Нажмите на область или перетащите в неё картинку для изменения обложки статьи"}
                                             </div>
@@ -91,11 +94,11 @@ const CreatePostPage = observer(() => {
                         )}
                     </Dropzone>
                     <input className={styles.input} name={"title"} value={title} 
-                           placeholder={"Заголовок статьи"} maxLength={100}
+                           placeholder={"Заголовок статьи"} maxLength={100} required
                            onChange={(e) => handleSetTitle(e.target.value)}
                     />
                     <textarea className={styles.textarea} name={"content"} value={content} maxLength={maxContentLength}
-                              placeholder={"Содержание статьи"}
+                              placeholder={"Содержание статьи"} required
                               onChange={(e) => handleSetContent(e.target.value)}
                     />
                     {
@@ -104,6 +107,10 @@ const CreatePostPage = observer(() => {
                             <small className={`${styles.limit} ${styles.limit_low}`}>
                                 {`${content.length}/${maxContentLength}`}
                             </small>
+                    }
+                    {
+                        status === PostsStoreStatus.CreatePostSuccess &&
+                        <div className={styles.success}>{"Статься успешно создана"}</div>
                     }
                     <button className={styles.button} type={"submit"} 
                             disabled={!isReady || title.trim().length <= 0 || content.trim().length <= 0}

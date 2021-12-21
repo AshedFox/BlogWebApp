@@ -13,8 +13,8 @@ type CommentProps = {
 }
 
 const Comment: FC<CommentProps> = observer(({comment, replyLevel}) => {
-    const {checkAuth} = useAccountStore();
-
+    const {account} = useAccountStore();
+    
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -22,7 +22,7 @@ const Comment: FC<CommentProps> = observer(({comment, replyLevel}) => {
                     {
                         comment.creator.avatar &&
                         <div className={styles.creator_avatar}>
-                            <img className={styles.image} src={comment.creator.avatar.url}/>
+                            <img className={styles.image} src={comment.creator.avatar.url} alt=""/>
                         </div>
                     }
                     <div>{comment.creator.name}</div>
@@ -33,7 +33,8 @@ const Comment: FC<CommentProps> = observer(({comment, replyLevel}) => {
                 <div className={styles.desc}>{comment.content}</div>
             </div>
             <div className={styles.footer}>
-                <Mark totalMark={comment.totalMark} isVotable={checkAuth()} handleVote={(param) => console.log(param)}/>
+                <Mark totalMark={comment.totalMark} isVotable={account !== undefined}
+                      handleVote={(param) => console.log(param)}/>
             </div>
         </div>
     );

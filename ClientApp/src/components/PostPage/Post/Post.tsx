@@ -12,7 +12,7 @@ type PostProps = {
 }
 
 const Post = observer(({post}:PostProps) => {
-    const {checkAuth} = useAccountStore();
+    const {account} = useAccountStore();
     
     return (
         <div className={styles.container}>
@@ -21,7 +21,7 @@ const Post = observer(({post}:PostProps) => {
                     {
                         post.creator.avatar &&
                         <div className={styles.creator_avatar}>
-                            <img className={styles.image} src={post.creator.avatar.url}/>
+                            <img className={styles.image} src={post.creator.avatar.url} alt=""/>
                         </div>
                     }
                     <div>{post.creator.name}</div>
@@ -29,9 +29,9 @@ const Post = observer(({post}:PostProps) => {
                 <div className={styles.date}>{new Date(post.createdAt).toLocaleString()}</div>
             </div>
             <div className={styles.main}>
-                <Link className={styles.title} to={routes.post + `/${post.id}`}>{post.title}</Link>
+                <div className={styles.title}>{post.title}</div>
                 {
-                    post.cover && 
+                    post.cover &&
                     <div className={styles.cover_container}>
                         <img className={styles.image} src={post.cover.url} alt="обложка статьи"/>
                     </div>
@@ -39,7 +39,8 @@ const Post = observer(({post}:PostProps) => {
                 <div className={styles.desc}>{post.content}</div>
             </div>
             <div className={styles.footer}>
-                <Mark totalMark={post.totalMark} isVotable={checkAuth()} handleVote={(param) => console.log(param)}/>
+                <Mark totalMark={post.totalMark} isVotable={account !== undefined}
+                      handleVote={(param) => console.log(param)}/>
             </div>
         </div>
     );

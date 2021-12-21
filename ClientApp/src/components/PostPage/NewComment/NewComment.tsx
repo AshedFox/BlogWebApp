@@ -1,4 +1,4 @@
-﻿import React, {ClassAttributes, FC, FormEvent, MutableRefObject, Ref, RefAttributes, RefObject, useState} from 'react';
+﻿import React, {FC, FormEvent, useState} from 'react';
 import styles from "./NewComment.module.css";
 
 type NewCommentProps = {
@@ -23,7 +23,7 @@ const NewComment:FC<NewCommentProps> = ({handleComment}) => {
         <div className={styles.container}>
             <div className={styles.title}>Написать комментарий</div>
             <form className={styles.form} onSubmit={(e) => handleSubmit(e)}>
-                <textarea className={styles.textarea} value={comment} maxLength={1000} rows={5}
+                <textarea className={styles.textarea} value={comment} maxLength={1000} required rows={5}
                           onChange={(e) => setComment(e.target.value)}
                 />
                 <button className={styles.button} disabled={comment.trim().length <= 0}>Отправить</button>

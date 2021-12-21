@@ -40,9 +40,10 @@
   width: 100%;
   margin-bottom: 8px;
 }
-.container .main .short_desc {
+.container .main .desc {
   font-size: 14px;
   white-space: break-spaces;
+  hyphens: auto;
 }
 .container .footer {
   display: flex;

@@ -20,55 +20,85 @@ export enum AccountStoreStatus {
 class Account {
     constructor() {
         makeAutoObservable(this);
-        
+
         const account = localStorage.getItem("account");
-        
+
         if (account) {
             this.account = JSON.parse(account) as AccountModel;
         }
     }
-
+    
+    private isRefreshingToken = false;
     account?: AccountModel;
     status: AccountStoreStatus = AccountStoreStatus.None;
     
-    
-    checkAuth = () => {
+    checkAuth = async () => {
+        let result = false;
+        
         if (this.account) {
-            try {
-                const jwt = jwtDecode<JwtPayload>(this.account.accessToken);
-                
-                if (jwt.exp) {
-                    if (jwt.exp * 1000 > Date.now()) {
-                        return true;
-                    }
-                    else {
+            await this.refreshTokenIfNeeded();
+            
+            if (this.account) {
+                try {
+                    const jwt = jwtDecode<JwtPayload>(this.account.accessToken);
+
+                    if (jwt.exp) {
+                        result = jwt.exp * 1000 > Date.now();
+                    } else {
                         this.logout();
-                        return false;
                     }
-                }
-                else {
-                    return false
-                }
-            }
-            catch (InvalidTokenError) {
-                return false;
+                } catch (InvalidTokenError) {}
             }
         }
-        else {
-            return false;
-        }
+        
+        return result;
     }
     
-    login = (loginData: LoginDto) => {
+    refreshTokenIfNeeded = async () => {
+        if (this.account && !this.isRefreshingToken) {
+            const jwt = jwtDecode<JwtPayload>(this.account.accessToken);
+
+            if (jwt.exp) {
+                if (jwt.exp * 1000 <= Date.now() - 60 * 1000) {
+                    this.isRefreshingToken = true;
+                    await this.refreshToken();
+                    this.isRefreshingToken = false;
+                }
+            }
+        }
+    }
+
+    private setAccount = (tokens: TokensDto) => {
+        let userId = ""
+
+        try {
+            const jwt = jwtDecode<JwtPayload>(tokens.accessToken);
+
+            if (jwt.sub) {
+                userId = jwt.sub;
+            }
+        }
+        catch (InvalidTokenError) {
+            throw new Error();
+        }
+
+        this.account = {
+            userId: userId,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken
+        };
+    }
+    
+    login = async (loginData: LoginDto) => {
         this.status = AccountStoreStatus.LoginLoading;
 
-        return usersService.login(loginData).then(
+        return await usersService.login(loginData).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
-                        (loginResult: TokensDto) => {
+                        (tokens: TokensDto) => {
                             try {
-                                this.loginSuccess(loginResult);
+                                this.loginSuccess(tokens);
                                 return true;
                             } catch {
                                 return false;
@@ -91,36 +121,18 @@ class Account {
             }
         );
     }
+    private loginSuccess = (tokens: TokensDto) => {
+        this.setAccount(tokens)
 
-    loginSuccess = (loginResult: TokensDto) => {
-        let userId = ""
-        
-        try {
-            const jwt = jwtDecode<JwtPayload>(loginResult.accessToken);
-            
-            console.log(jwt)
-            if (jwt.sub) {
-                userId = jwt.sub;
-            }
-        }
-        catch (InvalidTokenError) {
-            throw new Error();
-        }
-
-        this.account = {
-            userId: userId,
-            accessToken: loginResult.accessToken,
-            refreshToken: loginResult.refreshToken
-        };
-        
         this.status = AccountStoreStatus.LoginSuccess;
     }
-    loginError = () => this.status = AccountStoreStatus.LoginError;
+    private loginError = () => this.status = AccountStoreStatus.LoginError;
     
-    signUp = (signUpData: SignUpDto) => {
+
+    signUp = async (signUpData: SignUpDto) => {
         this.status = AccountStoreStatus.SignUpLoading;
 
-        return usersService.signUp(signUpData).then(
+        return await usersService.signUp(signUpData).then(
             (response) => {
                 if (response.status === 201) {
                     this.signUpSuccess();
@@ -137,12 +149,32 @@ class Account {
             }
         )
     }
-
-    signUpSuccess = () => this.status = AccountStoreStatus.SignUpSuccess;
-    signUpError = () => this.status = AccountStoreStatus.SignUpError;
+    private signUpSuccess = () => this.status = AccountStoreStatus.SignUpSuccess;
+    private signUpError = () => this.status = AccountStoreStatus.SignUpError;
+    
 
     logout = () => {
         this.account = undefined;
+    }
+    
+    refreshToken = async () => {
+        if (this.account) {
+            await usersService.refreshToken(this.account.refreshToken).then(
+                async (response) => {
+                    if (response.status === 200) {
+                        await response.json().then(
+                            (tokens: TokensDto) => {
+                                this.setAccount(tokens);
+                            },
+                            () => this.logout()
+                        )
+                    }
+                    else {
+                        this.logout();
+                    }
+                }
+            )
+        }
     }
 }
 

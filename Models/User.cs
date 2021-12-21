@@ -12,18 +12,21 @@ namespace BlogWebApp.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         [Required]
-        [StringLength(320)]
+        [StringLength(320, MinimumLength = 5)]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         [Required]
         [DataType(DataType.Password)]
         public string PasswordHash { get; set; }
+        [Required]
         public string Salt { get; set; }
         [Required]
+        [StringLength(100, MinimumLength = 1)]
         public string Name { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }
 
+        [ForeignKey(nameof(Avatar))]
         public virtual Guid? AvatarId { get; set; }
         public virtual File Avatar { get; set; }
         

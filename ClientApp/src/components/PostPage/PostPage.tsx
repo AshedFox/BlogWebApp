@@ -18,8 +18,7 @@ type PostPageParams = {
 const PostPage = observer(() => {
     const ref = useRef(null);
     //const inViewport = useIntersection(ref);
-    const {currentPost, getPost, status, createComment, getComments, getComment, addCommentToCurrentPost,
-        setCurrentPost} = usePostsStore();
+    const {currentPost, getPost, status, createComment, getComments, setCurrentPost} = usePostsStore();
     const {account} = useAccountStore();
     const match = useRouteMatch<PostPageParams>();
     
@@ -56,9 +55,9 @@ const PostPage = observer(() => {
     return (
         <Page>
             {
-                status === PostsStoreStatus.GetPostLoading || !currentPost ?
+                status === PostsStoreStatus.GetPostLoading ?
                     <Loader/> :
-                    status === PostsStoreStatus.GetPostError ?
+                    status === PostsStoreStatus.GetPostError || !currentPost ?
                         <div>ERROR!</div> :
                         <div className={styles.container}>
                             <Post post={currentPost}/>
