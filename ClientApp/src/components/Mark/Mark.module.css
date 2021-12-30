@@ -10,12 +10,6 @@
   align-items: center;
   color: #474C59;
 }
-.container .mark .positive {
-  color: #239423;
-}
-.container .mark .negative {
-  color: #b2493f;
-}
 .container .mark .star {
   font-size: 24px;
   line-height: 20px;
@@ -35,6 +29,12 @@
   cursor: pointer;
   transition: 0.3s;
 }
+.container .plus.voted {
+  color: #239423;
+}
+.container .plus.voted:hover {
+  color: #239423;
+}
 .container .plus::before {
   content: '▲';
 }
@@ -48,6 +48,12 @@
   align-self: center;
   cursor: pointer;
   transition: 0.3s;
+}
+.container .minus.voted {
+  color: #b2493f;
+}
+.container .minus.voted:hover {
+  color: #b2493f;
 }
 .container .minus::before {
   content: '▼';

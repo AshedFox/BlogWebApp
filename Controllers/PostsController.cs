@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using BlogWebApp.Data;
@@ -9,6 +10,7 @@ using BlogWebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace BlogWebApp.Controllers
 {
@@ -27,43 +29,47 @@ namespace BlogWebApp.Controllers
 
         // GET: api/Posts
         [HttpGet]
-        public async Task<ActionResult<GetPostsResultDto>> GetPosts(Guid? creatorId, int offset, int limit)
+        public async Task<ActionResult<GetPostsResultDto>> GetPosts(int offset, int limit, Guid? creatorId, 
+            string title, DateTime? startDateTime, DateTime? endDateTime)
         {
-            List<Post> posts;
+            var posts = await _context.Posts
+                .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
+                .Include(post => post.Cover)
+                .Include(post => post.Marks)
+                .OrderByDescending(post => post.CreatedAt).ToListAsync();
 
             if (creatorId is not null)
             {
-                posts = await _context.Posts
-                    .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
-                    .Include(post => post.Cover)
-                    .Include(post => post.Marks)
-                    .Include(post => post.UsersMarked)
-                    .Where(post => post.Creator.Id == creatorId)
-                    .OrderByDescending(post => post.CreatedAt)
-                    .Skip(offset).Take(limit)
-                    .ToListAsync();
-            }
-            else
-            {
-                posts = await _context.Posts
-                    .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
-                    .Include(post => post.Cover)
-                    .Include(post => post.Marks)
-                    .Include(post => post.UsersMarked)
-                    .OrderByDescending(post => post.CreatedAt)
-                    .Skip(offset).Take(limit).ToListAsync();
+                posts = posts.Where(post => post.Creator.Id == creatorId).ToList();
             }
 
-            var postsDto = _mapper.Map<List<Post>, List<PostDto>>(posts);
+            if (title is not null)
+            {
+                posts = posts.Where(post => post.Title.Contains(title, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (startDateTime is not null)
+            {
+                posts = posts.Where(post => post.CreatedAt >= startDateTime).ToList();
+            }
+
+            if (endDateTime is not null)
+            {
+                posts = posts.Where(post => post.CreatedAt <= endDateTime).ToList();
+            }
+
+            var postsList = posts.ToList();
+            var maxPage = (int)Math.Ceiling((double)postsList.Count / limit);
+            var postsDto = _mapper.Map<List<PostDto>>(postsList.Skip(offset).Take(limit).ToList());
 
             return new GetPostsResultDto()
             {
                 Posts = postsDto,
-                MaxPage = (int)Math.Ceiling((double)_context.Posts.Count() / limit)
+                MaxPage = maxPage
             };
         }
 
-        // GET: api/Posts/5
+        // GET: api/Posts/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<PostDto>> GetPost(Guid id)
         {
@@ -72,7 +78,6 @@ namespace BlogWebApp.Controllers
                 .ThenInclude(creator => creator.Avatar)
                 .Include(post => post.Cover)
                 .Include(post => post.Marks)
-                .Include(post => post.UsersMarked)
                 .FirstOrDefaultAsync(post => post.Id == id);
 
             if (post == null)
@@ -80,11 +85,10 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<Post, PostDto>(post);
+            return _mapper.Map<PostDto>(post);
         }
 
         // POST: api/Posts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<PostDto>> PostPost(PostToAddDto postToAdd)
@@ -93,11 +97,10 @@ namespace BlogWebApp.Controllers
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPost", new { id = post.Id }, _mapper.Map<Post, PostDto>(post));
+            return CreatedAtAction("GetPost", new { id = post.Id }, _mapper.Map<PostDto>(post));
         }
         
-        // PUT: api/Posts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/Posts/{id}
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> PutPost(Guid id, PostToEditDto postToEdit)
@@ -107,49 +110,47 @@ namespace BlogWebApp.Controllers
                 return BadRequest();
             }
             
-            var post = _mapper.Map<PostToEditDto, Post>(postToEdit);
-            
-            _context.Entry(post).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PostExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // DELETE: api/Posts/5
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<IActionResult> DeletePost(Guid id)
-        {
             var post = await _context.Posts.FindAsync(id);
-            if (post == null)
+            if (post is null)
             {
                 return NotFound();
             }
 
-            _context.Posts.Remove(post);
+            if (User.FindFirstValue(JwtRegisteredClaimNames.Sub) != post.CreatorId.ToString())
+            {
+                return Unauthorized();
+            }
+            
+            post.Content = postToEdit.Content;
+            post.Title = postToEdit.Title;
+            
+            _context.Entry(post).State = EntityState.Modified;
+
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool PostExists(Guid id)
+        // DELETE: api/Posts/{id}
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeletePost(Guid id)
         {
-            return _context.Posts.Any(e => e.Id == id);
+            var post = await _context.Posts.FindAsync(id);
+            if (post is null)
+            {
+                return NotFound();
+            }
+
+            if (User.FindFirstValue(JwtRegisteredClaimNames.Sub) != post.CreatorId.ToString())
+            {
+                return Unauthorized();
+            }
+            
+            _context.Posts.Remove(post);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,15 +47,18 @@ namespace BlogWebApp.Controllers
             {
                 return Unauthorized();
             }
-
-            var refreshToken = TokensGenerator.GenerateRefreshToken();
-
-            _context.RefreshTokens.Add(new RefreshToken()
+            
+            var refreshToken = new RefreshToken()
             {
-                Id = Guid.Parse(refreshToken),
+                Id = Guid.Parse(TokensGenerator.GenerateRefreshToken()),
                 UserId = user.Id,
                 ExpiredAt = DateTime.UtcNow.AddDays(AuthOptions.RefreshTokenLifetime)
-            });
+            };
+            
+            _context.RefreshTokens.Add(refreshToken);
+            _context.RefreshTokens.RemoveRange(_context.RefreshTokens.Where(rt => 
+                rt.ExpiredAt.CompareTo(DateTime.UtcNow) < 0));
+
             await _context.SaveChangesAsync();
 
             var accessToken = TokensGenerator.GenerateAccessToken(user.Id.ToString());
@@ -61,7 +66,7 @@ namespace BlogWebApp.Controllers
             var tokensDto = new TokensDto()
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken.Id.ToString()
             };
 
             return Ok(tokensDto);
@@ -76,22 +81,45 @@ namespace BlogWebApp.Controllers
 
             if (user is not null)
             {
-                return Challenge();
+                return Conflict();
             }
 
             var salt = GenerateSalt(64);
 
-            var userToAdd = _mapper.Map<SignUpDto, User>(signUpDto);
+            var userToAdd = _mapper.Map<User>(signUpDto);
             userToAdd.PasswordHash = GenerateArgon2Hash(userToAdd.PasswordHash, salt);
             userToAdd.Salt = salt;
 
             _context.Users.Add(userToAdd);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = userToAdd.Id }, _mapper.Map<User, UserDto>(userToAdd));
+            return CreatedAtAction("GetUser", new { id = userToAdd.Id }, _mapper.Map<UserDto>(userToAdd));
         }
 
-        // POST: api/User/RefreshToken
+        // POST: api/Users/Logout
+        [HttpPost("[action]")]
+        [Authorize]
+        public async Task<ActionResult> Logout([FromBody] string refreshToken)
+        {
+            if (refreshToken is null)
+            {
+                return BadRequest();
+            }
+
+            var token = await _context.RefreshTokens.FindAsync(Guid.Parse(refreshToken));
+
+            if (token is null)
+            {
+                return NotFound();
+            }
+
+            _context.Remove(token);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        // POST: api/Users/RefreshToken
         [HttpPost("[action]")]
         public async Task<ActionResult<TokensDto>> RefreshToken([FromBody] string refreshToken)
         {
@@ -107,13 +135,7 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            if (!token.IsActive)
-            {
-                return Unauthorized();
-            }
-
-            token.IsActive = false;
-            _context.Entry(token).State = EntityState.Modified;
+            _context.Remove(token);
             
             if (token.ExpiredAt.CompareTo(DateTime.UtcNow) < 0)
             {
@@ -122,14 +144,14 @@ namespace BlogWebApp.Controllers
                 return Unauthorized();
             }
 
-            var newToken = TokensGenerator.GenerateRefreshToken();
-
-            _context.RefreshTokens.Add(new RefreshToken()
+            var newRefreshToken = new RefreshToken()
             {
-                Id = Guid.Parse(newToken),
+                Id = Guid.Parse(TokensGenerator.GenerateRefreshToken()),
                 UserId = token.UserId,
                 ExpiredAt = DateTime.UtcNow.AddDays(AuthOptions.RefreshTokenLifetime)
-            });
+            };
+            _context.RefreshTokens.Add(newRefreshToken);
+
             await _context.SaveChangesAsync();
 
             var accessToken = TokensGenerator.GenerateAccessToken(token.UserId.ToString());
@@ -137,7 +159,7 @@ namespace BlogWebApp.Controllers
             var tokensDto = new TokensDto()
             {
                 AccessToken = accessToken,
-                RefreshToken = newToken
+                RefreshToken = newRefreshToken.Id.ToString()
             };
 
             return Ok(tokensDto);
@@ -147,15 +169,15 @@ namespace BlogWebApp.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
-            return _mapper.Map<List<User>, List<UserDto>>(
-                await _context.Users
-                    .Include(user => user.CreatedPosts)
-                    .Include(user => user.Avatar)
-                    .ToListAsync()
-            );
+            var users = await _context.Users
+                .Include(user => user.CreatedPosts)
+                .Include(user => user.Avatar)
+                .ToListAsync();
+            
+            return _mapper.Map<List<UserDto>>(users);
         }
 
-        // GET: api/Users/5
+        // GET: api/Users/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetUser(Guid id)
         {
@@ -169,41 +191,39 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<User, UserDto>(user);
+            return _mapper.Map<UserDto>(user);
         }
 
-        // PUT: api/Users/5
+        // PUT: api/Users/{id}
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> PutUser(Guid id, [FromBody] User user)
+        public async Task<IActionResult> PutUser(Guid id, [FromBody] UserToEditDto userToEdit)
         {
-            if (id != user.Id)
+            if (id != userToEdit.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
+            var user = await _context.Users.FindAsync(id);
 
-            try
+            if (User.FindFirstValue(JwtRegisteredClaimNames.Sub) != user.Id.ToString())
             {
-                await _context.SaveChangesAsync();
+                return Unauthorized();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            
+            user.Name = userToEdit.Name;
+            user.BornAt = userToEdit.BornAt;
+            user.SelfInformation = userToEdit.SelfInformation;
+            user.Gender = userToEdit.Gender;
+            
+            _context.Entry(user).State = EntityState.Modified;
+            
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // DELETE: api/Users/5
+        // DELETE: api/Users/{id}
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteUser(Guid id)
@@ -214,15 +234,15 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
+            if (User.FindFirstValue(JwtRegisteredClaimNames.Sub) != user.Id.ToString())
+            {
+                return Unauthorized();
+            }
+            
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool UserExists(Guid id)
-        {
-            return _context.Users.Any(e => e.Id == id);
         }
 
         private string GenerateSalt(int length)

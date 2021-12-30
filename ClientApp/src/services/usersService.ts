@@ -30,6 +30,19 @@ const login = async (loginData: LoginDto) => {
     return await fetch(request);
 }
 
+const logout = async (refreshToken: string) => {
+    const headers = new Headers(makeAuthHeader());
+    headers.append("Content-Type", "application/json");
+    const options:RequestInit = {
+        method: "POST",
+        headers,
+        body: `"${refreshToken}"`
+    }
+    const request = new Request(apiUrl + "/logout", options);
+
+    return await fetch(request);
+}
+
 const refreshToken = async (refreshToken: string) => {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
@@ -68,6 +81,7 @@ const getUser = async (id: string) => {
 const usersService = {
     signUp,
     login,
+    logout,
     refreshToken,
     getUsers,
     getUser

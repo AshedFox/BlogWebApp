@@ -12,13 +12,6 @@
     display: flex;
     align-items: center;
     color: @color3;
-
-    .positive {
-      color: @okColor;
-    }
-    .negative {
-      color: @errorColor;
-    }
     
     .star {
       font-size: 24px;
@@ -43,6 +36,14 @@
     cursor: pointer;
     transition: 0.3s;
     
+    &.voted {
+      color: @okColor;
+      
+      &:hover {
+        color: @okColor;
+      }
+    }
+    
     &::before{
       content: '▲';
     }
@@ -59,6 +60,14 @@
     cursor: pointer;
     transition: 0.3s;
 
+    &.voted {
+      color: @errorColor;
+      
+      &:hover {
+        color: @errorColor;
+      }
+    }
+    
     &::before{
       content: '▼';
     }

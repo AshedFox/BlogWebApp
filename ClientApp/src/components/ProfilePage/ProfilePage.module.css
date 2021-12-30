@@ -19,6 +19,7 @@
   background-color: #ececec;
 }
 .container .content .user .avatar .image {
+  fill: #2F3040;
   object-fit: cover;
   width: 100%;
   height: 100%;

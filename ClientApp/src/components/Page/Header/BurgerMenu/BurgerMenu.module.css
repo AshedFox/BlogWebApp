@@ -1,3 +1,19 @@
+@keyframes show_list {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes hide_list {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 .menu {
   position: relative;
   z-index: 99;
@@ -29,6 +45,17 @@
   content: '';
   top: 8px;
 }
+.menu.active .button > span {
+  transform: rotate(45deg);
+}
+.menu.active .button > span::before {
+  top: 0;
+  transform: rotate(0);
+}
+.menu.active .button > span::after {
+  top: 0;
+  transform: rotate(90deg);
+}
 .menu .list {
   display: flex;
   flex-direction: column;
@@ -41,9 +68,13 @@
   width: 300px;
   position: absolute;
   overflow: hidden;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s;
+  animation-name: show_list;
+  animation-duration: 500ms;
+}
+.menu .list.closing {
+  animation-name: hide_list;
+  animation-duration: 500ms;
+  pointer-events: none;
 }
 .menu .list .list_item {
   display: block;
@@ -52,25 +83,11 @@
   font-size: 16px;
   font-weight: 500;
   text-decoration: none;
-  transition-duration: 0.25s;
   cursor: pointer;
+  user-select: none;
+  transition: 0.25s;
 }
 .menu .list .list_item:hover {
   background-color: #D8F2F0;
-}
-.menu[class~="active"] .button > span {
-  transform: rotate(45deg);
-}
-.menu[class~="active"] .button > span::before {
-  top: 0;
-  transform: rotate(0);
-}
-.menu[class~="active"] .button > span::after {
-  top: 0;
-  transform: rotate(90deg);
-}
-.menu[class~="active"] .list {
-  opacity: 1;
-  visibility: visible;
 }
 /*# sourceMappingURL=BurgerMenu.module.css.map */

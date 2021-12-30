@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace BlogWebApp.Models
 {
@@ -25,6 +24,11 @@ namespace BlogWebApp.Models
         public string Name { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }
+        
+        [StringLength(1000, MinimumLength = 1)]
+        public string SelfInformation { get; set; }
+        public DateTime? BornAt { get; set; }
+        public UserGender Gender { get; set; }
 
         [ForeignKey(nameof(Avatar))]
         public virtual Guid? AvatarId { get; set; }

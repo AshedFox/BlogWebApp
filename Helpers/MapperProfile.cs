@@ -9,24 +9,29 @@ namespace BlogWebApp.Helpers
     {
         public MapperProfile()
         {
+            //user
             CreateMap<User, UserDto>();
             CreateMap<User, ShortUserDto>();
             CreateMap<SignUpDto, User>();
-            CreateMap<Post, PostDto>()
-                .ForMember(dto => dto.TotalMark, expression => 
-                    expression.MapFrom(post => post.Marks.Sum(mark => mark.Value)))
-                .ForMember(dto => dto.MarksCount, expression => 
-                    expression.MapFrom(post => post.Marks.Count));
+            CreateMap<UserToEditDto, User>();
+            //post
+            CreateMap<Post, PostDto>();
             CreateMap<PostToAddDto, Post>();
             CreateMap<PostToEditDto, Post>();
-            CreateMap<Comment, CommentDto>()
-                .ForMember(dto => dto.TotalMark, expression => 
-                    expression.MapFrom(comment => comment.Marks.Sum(mark => mark.Value)))
-                .ForMember(dto => dto.MarksCount, expression => 
-                    expression.MapFrom(comment => comment.Marks.Count));
+            //comment
+            CreateMap<Comment, CommentDto>();
             CreateMap<CommentToAddDto, Comment>();
             CreateMap<CommentToEditDto, Comment>();
+            //file
             CreateMap<File, FileDto>();
+            //post mark
+            CreateMap<PostMark, PostMarkDto>();
+            CreateMap<PostMarkToAddDto, PostMark>();
+            CreateMap<PostMarkToEditDto, PostMark>();
+            //comment mark
+            CreateMap<CommentMark, CommentMarkDto>();
+            CreateMap<CommentMarkToAddDto, CommentMark>();
+            CreateMap<CommentMarkToEditDto, CommentMark>();
         }
     }
 }

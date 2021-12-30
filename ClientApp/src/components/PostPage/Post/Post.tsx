@@ -6,6 +6,9 @@ import {Link} from 'react-router-dom';
 import Mark from "../../Mark/Mark";
 import {observer} from "mobx-react";
 import {useAccountStore} from "../../../store/AccountStore";
+import {PostMarkToAddDto} from "../../../DTOs/PostMarkToAddDto";
+import {usePostsStore} from "../../../store/PostsStore";
+import {PostMarkToEditDto} from "../../../DTOs/PostMarkToEditDto";
 
 type PostProps = {
     post: PostModel
@@ -13,6 +16,69 @@ type PostProps = {
 
 const Post = observer(({post}:PostProps) => {
     const {account} = useAccountStore();
+    const {markPost, unmarkPost, changePostMark, setCurrentPostMarks} = usePostsStore();
+    
+    const handleMark = (vote: number) => {
+        if (account) {
+            const markToAdd: PostMarkToAddDto = {
+                postId: post.id,
+                userId: account.userId,
+                value: vote
+            }
+
+            markPost(markToAdd).then(
+                (mark) => {
+                    if (mark) {
+                        setCurrentPostMarks([...post.marks, mark])
+                    }
+                }
+            )
+        }
+    }
+    
+    const hadnleUnmark = () => {
+        if (account) {
+            const markToUnmark = post.marks.find(mark => mark.userId === account.userId);
+            
+            if (markToUnmark) {
+                unmarkPost(markToUnmark.id).then(
+                    (value) => {
+                        if (value) {
+                            setCurrentPostMarks(post.marks.filter(mark => mark !== markToUnmark))
+                        }
+                    }
+                )
+            }
+        }
+    }
+    
+    const handleChangeMark = (vote: number) => {
+        if (account) {
+            const markToEdit = post.marks.find(mark => mark.userId === account.userId);
+
+            if (markToEdit) {
+                const newMark: PostMarkToEditDto = {
+                    id: markToEdit.id,
+                    value: vote
+                }
+                
+                changePostMark(markToEdit.id, newMark).then(
+                    (value) => {
+                        if (value) {
+                            setCurrentPostMarks(
+                                post.marks.map(mark => {
+                                    if (mark.id === markToEdit.id) {
+                                        mark.value = vote;
+                                    }
+                                    return mark;
+                                })
+                            )
+                        }
+                    }
+                )
+            }
+        }
+    }
     
     return (
         <div className={styles.container}>
@@ -39,8 +105,13 @@ const Post = observer(({post}:PostProps) => {
                 <div className={styles.desc}>{post.content}</div>
             </div>
             <div className={styles.footer}>
-                <Mark totalMark={post.totalMark} isVotable={account !== undefined}
-                      handleVote={(param) => console.log(param)}/>
+                {
+                    account !== undefined ?
+                        <Mark marks={post.marks} isVotable={true} handleMark={handleMark}
+                              handleUnmark={hadnleUnmark} handleChangeMark={handleChangeMark}
+                        /> :
+                        <Mark marks={post.marks} isVotable={false}/>
+                }
             </div>
         </div>
     );

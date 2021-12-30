@@ -36,6 +36,7 @@ namespace BlogWebApp.Controllers
             _cloudinary = new Cloudinary(account);
         }
 
+        // GET: api/Files/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<FileDto>> GetFile(Guid id)
         {
@@ -46,9 +47,10 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<File, FileDto>(file);
+            return _mapper.Map<FileDto>(file);
         }
 
+        // POST: api/Files
         [HttpPost]
         [Authorize]
         public async Task<ActionResult> PostFile(IFormFile file)
@@ -84,7 +86,7 @@ namespace BlogWebApp.Controllers
             _context.Files.Add(fileToAdd);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFile", new { id = fileToAdd.Id }, _mapper.Map<File, FileDto>(fileToAdd));
+            return CreatedAtAction("GetFile", new { id = fileToAdd.Id }, _mapper.Map<FileDto>(fileToAdd));
         }
     }
 }

@@ -31,7 +31,5 @@ namespace BlogWebApp.Models
         public virtual Comment ParentComment { get; set; }
         
         public virtual ICollection<CommentMark> Marks { get; set; } = new List<CommentMark>();
-        public virtual ICollection<User> UsersMarked { get; set; } = new List<User>();
-
     }
 }

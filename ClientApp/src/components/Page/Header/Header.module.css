@@ -48,6 +48,7 @@
   font-size: 18px;
   font-weight: 500;
   border-bottom: 2px solid transparent;
+  cursor: pointer;
 }
 .header .container .body .link:hover {
   border-bottom: 2px solid #fafafa;

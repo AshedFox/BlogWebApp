@@ -1,4 +1,4 @@
-﻿import {makeAutoObservable} from "mobx";
+﻿import {makeAutoObservable, runInAction} from "mobx";
 import {UserModel} from "../models/UserModel";
 import usersService from "../services/usersService";
 import {AccountStore} from "./AccountStore";
@@ -23,9 +23,9 @@ class Users {
     status: UsersStoreStatus = UsersStoreStatus.None;
     
     getUsers = async () => {
+        runInAction(() => this.status = UsersStoreStatus.GetUsersLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = UsersStoreStatus.GetUsersLoading;
 
         return await usersService.getUsers().then(
             (response) => {
@@ -58,9 +58,9 @@ class Users {
     private getUsersError = () => this.status = UsersStoreStatus.GetUsersError;
     
     getUser = async (id: string) => {
+        runInAction(() => this.status = UsersStoreStatus.GetUserLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = UsersStoreStatus.GetUserLoading;
         
         return await usersService.getUser(id).then(
             (response) => {

@@ -55,10 +55,10 @@ const PostPage = observer(() => {
     return (
         <Page>
             {
-                status === PostsStoreStatus.GetPostLoading ?
+                status === PostsStoreStatus.GetPostLoading || !currentPost ?
                     <Loader/> :
-                    status === PostsStoreStatus.GetPostError || !currentPost ?
-                        <div>ERROR!</div> :
+                    status === PostsStoreStatus.GetPostError ?
+                        <div>Возникла ошибка при загрузке данных статьи!</div> :
                         <div className={styles.container}>
                             <Post post={currentPost}/>
                             <div ref={ref}>

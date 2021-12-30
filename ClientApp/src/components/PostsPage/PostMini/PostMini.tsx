@@ -38,11 +38,11 @@ const PostMini = ({post}:PostMiniProps) => {
                             post.content.substr(0, 2000) : 
                             post.content
                     }
-                    {post.content.length > 2000 && <button>{"читать дальше"}</button>}
+                    {post.content.length > 2000 && <span className={styles.continue}>{". . ."}</span>}
                 </div>
             </div>
             <div className={styles.footer}>
-                <Mark totalMark={post.totalMark} isVotable={false} handleVote={(param) => console.log(param)}/>
+                <Mark marks={post.marks} isVotable={false}/>
             </div>
         </div>
     );

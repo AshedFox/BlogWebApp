@@ -4,20 +4,34 @@ import {makeAuthHeader} from "../helpers/authHeader";
 
 const apiUrl = window.location.origin + "/api/posts";
 
-const getPosts = async (offset: number, limit: number, creatorId?: string) => {
+const getPosts = async (offset: number, limit: number, creatorId?: string, title?: string,
+                        startDateTime?:string, endDateTime?: string) => {
     const options: RequestInit = {
         method: "GET",
         headers: makeAuthHeader()
     }
 
-    let urlParams = new URLSearchParams();
-    urlParams.append("offset", String(offset));
-    urlParams.append("limit", String(limit));
+    let urlParams = new URLSearchParams({
+        offset: String(offset),
+        limit: String(limit)
+    });
 
     if (creatorId) {
         urlParams.append("creatorId", creatorId);
     }
+    
+    if (title) {
+        urlParams.append("title", title);
+    }
+    
+    if (startDateTime) {
+        urlParams.append("startDateTime", startDateTime);
+    }
 
+    if (endDateTime) {
+        urlParams.append("endDateTime", endDateTime);
+    }
+    
     const request = new Request(apiUrl + "?" + urlParams, options);
     
     return await fetch(request);

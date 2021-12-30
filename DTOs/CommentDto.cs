@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BlogWebApp.DTOs
 {
@@ -9,8 +10,7 @@ namespace BlogWebApp.DTOs
         public DateTime CreatedAt { get; set; }
         public ShortUserDto Creator { get; set; }
         public PostDto Post { get; set; }
-        public int TotalMark { get; set; }
-        public int MarksCount { get; set; }
+        public ICollection<CommentMarkDto> Marks { get; set; }
         public CommentDto ParentComment { get; set; }
     }
 }

@@ -11,8 +11,6 @@ namespace BlogWebApp.Models
         public Guid Id { get; set; }
         [Required]
         public DateTime ExpiredAt { get; set; }
-        [Required]
-        public bool IsActive { get; set; }
 
         [Required]
         [ForeignKey(nameof(User))]

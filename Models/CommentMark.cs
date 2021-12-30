@@ -6,6 +6,10 @@ namespace BlogWebApp.Models
 {
     public class CommentMark
     {
+        [Key]
+        [Required] 
+        public Guid Id { get; set; }
+        
         [Required]
         public byte Value { get; set; }
     

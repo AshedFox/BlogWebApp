@@ -1,4 +1,4 @@
-import {makeAutoObservable} from "mobx";
+import {makeAutoObservable, runInAction} from "mobx";
 import {PostToAddDto} from "../DTOs/PostToAddDto";
 import {PostToEditDto} from "../DTOs/PostToEditDto";
 import {PostModel} from "../models/PostModel";
@@ -10,6 +10,13 @@ import {CommentToAddDto} from "../DTOs/CommentToAddDto";
 import {CommentToEditDto} from "../DTOs/CommentToEditDto";
 import commentsService from "../services/commentsService";
 import {CommentModel} from "../models/CommentModel";
+import {PostMarkToAddDto} from "../DTOs/PostMarkToAddDto";
+import marksService from "../services/marksService";
+import {PostMarkModel} from "../models/PostMarkModel";
+import {PostMarkToEditDto} from "../DTOs/PostMarkToEditDto";
+import {CommentMarkModel} from "../models/CommentMarkModel";
+import {CommentMarkToAddDto} from "../DTOs/CommentMarkToAddDto";
+import {CommentMarkToEditDto} from "../DTOs/CommentMarkToEditDto";
 
 export enum PostsStoreStatus {
     None = "None",
@@ -61,12 +68,13 @@ class Posts {
     setPage = (page: number) => this.currentPage = page;
     setCurrentPost = (post?: PostModel) => this.currentPost =  post;
     
-    getPosts = async (currentPage: number, count: number, creatorId?: string) => {
+    getPosts = async (currentPage: number, count: number, creatorId?: string, title?: string, 
+                      startDateTime?:string, endDateTime?: string) => {
+        runInAction(() => this.status = PostsStoreStatus.GetPostsLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.GetPostsLoading;
-
-        return await postsService.getPosts(currentPage * count, count, creatorId).then(
+        
+        return await postsService.getPosts(currentPage * count, count, creatorId, title, startDateTime, endDateTime).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
@@ -108,10 +116,10 @@ class Posts {
     private getPostsError = () => this.status = PostsStoreStatus.GetPostsError;
 
     getPost = async (id: string) => {
+        runInAction(() => this.status = PostsStoreStatus.GetPostLoading);
+
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.GetPostLoading;
-
+        
         return await postsService.getPost(id).then(
             (response) => {
                 if (response.status === 200) {
@@ -147,9 +155,9 @@ class Posts {
     private getPostError = () => this.status = PostsStoreStatus.GetPostError;
 
     createPost = async (postToAdd: PostToAddDto) => {
+        runInAction(() => this.status = PostsStoreStatus.CreatePostLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.CreatePostLoading;
 
         return await postsService.postPost(postToAdd).then(
             (response) => {
@@ -183,9 +191,9 @@ class Posts {
     private createPostError = () => this.status = PostsStoreStatus.CreatePostError;
     
     editPost = async (id: string, postToEdit: PostToEditDto) => {
+        runInAction(() => this.status = PostsStoreStatus.EditPostLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.EditPostLoading
 
         await postsService.putPost(id, postToEdit).then(
             (response) => {
@@ -208,9 +216,9 @@ class Posts {
     private editPostError = () => this.status = PostsStoreStatus.EditPostError;
     
     deletePost = async (id: string) => {
+        runInAction(() => this.status = PostsStoreStatus.DeletePostLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.DeletePostLoading
 
         await postsService.deletePost(id).then(
             (response) => {
@@ -243,9 +251,9 @@ class Posts {
     }
     
     getComments = async (postId?: string) => {
+        runInAction(() => this.status = PostsStoreStatus.GetCommentsLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.GetCommentsLoading;
 
         return await commentsService.getComments(postId).then(
             (response) => {
@@ -284,9 +292,9 @@ class Posts {
     private getCommentsError = () => this.status = PostsStoreStatus.GetCommentsError;
     
     getComment = async (id: string) => {
+        runInAction(() => this.status = PostsStoreStatus.GetCommentLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.GetCommentLoading;
 
         return await commentsService.getComment(id).then(
             (response) => {
@@ -320,9 +328,9 @@ class Posts {
     private getCommentError = () => this.status = PostsStoreStatus.GetCommentError;
     
     createComment = async (commentToAdd: CommentToAddDto) => {
+        runInAction(() => this.status = PostsStoreStatus.CreateCommentLoading);
+        
         await AccountStore.refreshTokenIfNeeded();
-
-        this.status = PostsStoreStatus.CreateCommentLoading;
 
         return await commentsService.postComment(commentToAdd).then(
             (response) => {
@@ -356,9 +364,9 @@ class Posts {
     private createCommentError = () => this.status = PostsStoreStatus.CreateCommentError;
     
     editComment = async (id: string, commentToEdit: CommentToEditDto) => {
-        await AccountStore.refreshTokenIfNeeded();
+        runInAction(() =>  this.status = PostsStoreStatus.EditCommentLoading);
         
-        this.status = PostsStoreStatus.EditCommentLoading;
+        await AccountStore.refreshTokenIfNeeded();
         
         await commentsService.putComment(id, commentToEdit).then(
             (response) => {
@@ -382,9 +390,9 @@ class Posts {
     private editCommentError = () => this.status = PostsStoreStatus.EditCommentError;
     
     deleteComment = async (id: string) => {
+        runInAction(() => this.status = PostsStoreStatus.DeleteCommentLoading);
+        
         await AccountStore.refreshTokenIfNeeded()
-
-        this.status = PostsStoreStatus.DeleteCommentLoading;
 
         await commentsService.deleteComment(id).then(
             (response) => {
@@ -406,6 +414,167 @@ class Posts {
     }
     private deleteCommentSuccess = () => this.status = PostsStoreStatus.DeleteCommentSuccess;
     private deleteCommentError = () => this.status = PostsStoreStatus.DeleteCommentError;
+    
+    setCurrentPostMarks = (marks: PostMarkModel[]) => {
+        if (this.currentPost) {
+            this.currentPost.marks = marks;
+        }
+    }
+    
+    markPost = async (markToAdd: PostMarkToAddDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+        
+        return await marksService.markPost(markToAdd).then(
+            (response) => {
+                if (response.status === 201) {
+                    return response.json().then(
+                        (mark: PostMarkModel) => {
+                            return mark;
+                        },
+                        () => {
+                            return null;
+                        }
+                    )
+                } else {
+
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+                    return null;
+                }
+            },
+            () => {
+                return null;
+            }
+        )
+    }
+    
+    unmarkPost = async (markId: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
+        return await marksService.unmarkPost(markId).then(
+            (response) => {
+                if (response.status === 204) {
+                    return true;
+                }
+                else {
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+                    
+                    return false;
+                }
+            },
+            () => {
+                return false;
+            }
+        );
+    }
+    
+    changePostMark = async (markId: string, markToEdit: PostMarkToEditDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+
+        return await marksService.changePostMark(markId, markToEdit).then(
+            (response) => {
+                if (response.status === 204) {
+                    return true;
+                }
+                else {
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+                    
+                    return false;
+                }
+            },
+            () => {
+                return false;
+            }
+        )
+    }
+
+    setCurrentPostCommentMarks = (commentId: string, marks: CommentMarkModel[]) => {
+        if (this.currentPost) {
+            this.currentPost.comments = this.currentPost.comments.map((comment) => {
+                if (comment.id === commentId) {
+                    comment.marks = marks;
+                }
+                return comment
+            })
+        }
+    }
+
+    markComment = async (markToAdd: CommentMarkToAddDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+
+        return await marksService.markComment(markToAdd).then(
+            (response) => {
+                if (response.status === 201) {
+                    return response.json().then(
+                        (mark: CommentMarkModel) => {
+                            return mark;
+                        },
+                        () => {
+                            return null;
+                        }
+                    )
+                } else {
+
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+                    return null;
+                }
+            },
+            () => {
+                return null;
+            }
+        )
+    }
+
+    unmarkComment = async (markId: string) => {
+        await AccountStore.refreshTokenIfNeeded();
+
+        return await marksService.unmarkComment(markId).then(
+            (response) => {
+                if (response.status === 204) {
+                    return true;
+                }
+                else {
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+
+                    return false;
+                }
+            },
+            () => {
+                return false;
+            }
+        );
+    }
+
+    changeCommentMark = async (markId: string, markToEdit: CommentMarkToEditDto) => {
+        await AccountStore.refreshTokenIfNeeded();
+
+        return await marksService.changeCommentMark(markId, markToEdit).then(
+            (response) => {
+                if (response.status === 204) {
+                    return true;
+                }
+                else {
+                    if (response.status === 401) {
+                        AccountStore.logout();
+                    }
+
+                    return false;
+                }
+            },
+            () => {
+                return false;
+            }
+        )
+    }
 }
 
 export const PostsStore = new Posts();

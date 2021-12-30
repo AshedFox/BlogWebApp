@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -29,36 +31,22 @@ namespace BlogWebApp.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(Guid? postId)
         {
-            List<Comment> comments;
+            var comments = _context.Comments
+                .Include(comment => comment.Creator)
+                .Include(comment => comment.Post)
+                .Include(comment => comment.ParentComment)
+                .Include(comment => comment.Marks)
+                .OrderBy(comment => comment.CreatedAt).AsQueryable();
 
-            if (postId is null)
+            if (postId is not null)
             {
-                comments = await _context.Comments
-                    .Include(comment => comment.Creator)
-                    .Include(comment => comment.Post)
-                    .Include(comment => comment.ParentComment)
-                    .Include(comment => comment.UsersMarked)
-                    .Include(comment => comment.Marks)
-                    .OrderBy(comment => comment.CreatedAt)
-                    .ToListAsync();
-            }
-            else
-            {
-                comments = await _context.Comments
-                    .Include(comment => comment.Creator)
-                    .Include(comment => comment.Post)
-                    .Include(comment => comment.ParentComment)
-                    .Include(comment => comment.UsersMarked)
-                    .Include(comment => comment.Marks)
-                    .Where(comment => comment.PostId == postId)
-                    .OrderBy(comment => comment.CreatedAt)
-                    .ToListAsync();
+                comments = comments.Where(comment => comment.PostId == postId);
             }
 
-            return _mapper.Map<List<Comment>, List<CommentDto>>(comments);
+            return _mapper.Map<List<CommentDto>>(await comments.ToListAsync());
         }
 
-        // GET: api/Comments/5
+        // GET: api/Comments/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<CommentDto>> GetComment(Guid id)
         {
@@ -66,7 +54,6 @@ namespace BlogWebApp.Controllers
                 .Include(comment => comment.Creator)
                 .Include(comment => comment.Post)
                 .Include(comment => comment.ParentComment)
-                .Include(comment => comment.UsersMarked)
                 .Include(comment => comment.Marks)
                 .FirstOrDefaultAsync(comment => comment.Id == id);
 
@@ -75,11 +62,23 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<Comment, CommentDto>(comment);
+            return _mapper.Map<CommentDto>(comment);
         }
 
-        // PUT: api/Comments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/Comments
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult<Comment>> PostComment(CommentToAddDto commentToAdd)
+        {
+            var comment = _mapper.Map<Comment>(commentToAdd);
+            
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetComment", new { id = comment.Id }, _mapper.Map<Comment, CommentDto>(comment));
+        }
+        
+        // PUT: api/Comments/{id}
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> PutComment(Guid id, CommentToEditDto commentToEdit)
@@ -89,63 +88,46 @@ namespace BlogWebApp.Controllers
                 return BadRequest();
             }
 
-            var comment = _mapper.Map<CommentToEditDto, Comment>(commentToEdit);
+            var comment = await _context.Comments.FindAsync(id);
+            if (comment is null)
+            {
+                return NotFound();
+            }
+            
+            if (User.FindFirstValue(JwtRegisteredClaimNames.Sub) != comment.CreatorId.ToString())
+            {
+                return Unauthorized();
+            }
+            
+            comment.Content = commentToEdit.Content;
             
             _context.Entry(comment).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CommentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // POST: api/Comments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<Comment>> PostComment(CommentToAddDto commentToAdd)
-        {
-            var comment = _mapper.Map<CommentToAddDto, Comment>(commentToAdd);
-            
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetComment", new { id = comment.Id }, _mapper.Map<Comment, CommentDto>(comment));
-        }
-
-        // DELETE: api/Comments/5
+        // DELETE: api/Comments/{id}
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteComment(Guid id)
         {
             var comment = await _context.Comments.FindAsync(id);
-            if (comment == null)
+            if (comment is null)
             {
                 return NotFound();
             }
 
+            if (User.FindFirstValue(JwtRegisteredClaimNames.Sub) != comment.CreatorId.ToString())
+            {
+                return Unauthorized();
+            }
+            
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool CommentExists(Guid id)
-        {
-            return _context.Comments.Any(e => e.Id == id);
         }
     }
 }

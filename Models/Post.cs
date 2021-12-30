@@ -16,6 +16,7 @@ namespace BlogWebApp.Models
         [Required]
         [StringLength(100, MinimumLength = 1)]
         public string Title { get; set; }
+        [Required]
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }
         [Required]
@@ -32,7 +33,6 @@ namespace BlogWebApp.Models
         public virtual File Cover { get; set; }
 
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
-        public virtual ICollection<User> UsersMarked { get; set; } = new List<User>();
         public virtual ICollection<PostMark> Marks { get; set; } = new List<PostMark>();
 
     }
