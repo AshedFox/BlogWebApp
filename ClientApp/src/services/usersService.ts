@@ -1,6 +1,5 @@
 import {SignUpDto} from "../DTOs/SignUpDto";
 import {LoginDto} from "../DTOs/LoginDto";
-import {makeAuthHeader} from "../helpers/authHeader";
 
 const apiUrl = window.location.origin + "/api/users";
 
@@ -30,26 +29,24 @@ const login = async (loginData: LoginDto) => {
     return await fetch(request);
 }
 
-const logout = async (refreshToken: string) => {
-    const headers = new Headers(makeAuthHeader());
+const logout = async () => {
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "POST",
-        headers,
-        body: `"${refreshToken}"`
+        headers
     }
     const request = new Request(apiUrl + "/logout", options);
 
     return await fetch(request);
 }
 
-const refreshToken = async (refreshToken: string) => {
+const refreshToken = async () => {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "POST",
-        headers,
-        body: `"${refreshToken}"`
+        headers
     }
     const request = new Request(apiUrl + "/refreshToken", options);
 
@@ -59,7 +56,6 @@ const refreshToken = async (refreshToken: string) => {
 const getUsers = async () => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl, options);
@@ -70,7 +66,6 @@ const getUsers = async () => {
 const getUser = async (id: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + "/" + id, options);

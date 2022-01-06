@@ -3,7 +3,7 @@ import {CommentModel} from "../../../../models/CommentModel";
 import styles from "./Comment.module.css";
 import {Link} from "react-router-dom";
 import {routes} from "../../../../constants/routes";
-import Mark from "../../../Mark/Mark";
+import Mark, {MarkViewType} from "../../../Mark/Mark";
 import {observer} from "mobx-react";
 import {useAccountStore} from "../../../../store/AccountStore";
 import {usePostsStore} from "../../../../store/PostsStore";
@@ -55,7 +55,7 @@ const Comment: FC<CommentProps> = observer(({comment, replyLevel}) => {
 
     const handleChangeMark = (vote: number) => {
         if (account) {
-            const markToEdit = comment.marks.find(mark => mark.userId === account.userId);
+            const markToEdit = comment.marks.find(mark => mark.userId  === account.userId);
 
             if (markToEdit) {
                 const newMark: CommentMarkToEditDto = {
@@ -101,10 +101,10 @@ const Comment: FC<CommentProps> = observer(({comment, replyLevel}) => {
             <div className={styles.footer}>
                 {
                     account !== undefined ?
-                        <Mark marks={comment.marks} isVotable={true} handleMark={handleMark}
-                              handleUnmark={hadnleUnmark} handleChangeMark={handleChangeMark}
+                        <Mark marks={comment.marks} isVotable={true} userToCheckMarkId={account.userId} 
+                              handleMark={handleMark} handleUnmark={hadnleUnmark} handleChangeMark={handleChangeMark}
                         /> :
-                        <Mark marks={comment.marks} isVotable={false}/>
+                        <Mark marks={comment.marks} isVotable={false} viewType={MarkViewType.OnlyTotal}/>
                 }
             </div>
         </div>

@@ -68,13 +68,13 @@ class Posts {
     setPage = (page: number) => this.currentPage = page;
     setCurrentPost = (post?: PostModel) => this.currentPost =  post;
     
-    getPosts = async (currentPage: number, count: number, creatorId?: string, title?: string, 
+    getPosts = async (currentPage: number, count: number, title?: string, 
                       startDateTime?:string, endDateTime?: string) => {
         runInAction(() => this.status = PostsStoreStatus.GetPostsLoading);
         
         await AccountStore.refreshTokenIfNeeded();
         
-        return await postsService.getPosts(currentPage * count, count, creatorId, title, startDateTime, endDateTime).then(
+        return await postsService.getPosts(currentPage * count, count, title, startDateTime, endDateTime).then(
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(

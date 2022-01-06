@@ -24,7 +24,7 @@ namespace BlogWebApp.Data
             modelBuilder.Entity<User>().Property(user => user.Id).HasDefaultValueSql("uuid_generate_v4()");
             modelBuilder.Entity<User>().Property(user => user.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("now()");
             modelBuilder.Entity<User>().HasIndex(user => user.Email).IsUnique();
-            
+
             modelBuilder.Entity<Post>().Property(post => post.Id).HasDefaultValueSql("uuid_generate_v4()");
             modelBuilder.Entity<Post>().Property(post => post.CreatedAt)
                 .ValueGeneratedOnAdd().HasDefaultValueSql("now()");
@@ -35,11 +35,11 @@ namespace BlogWebApp.Data
                 .HasMany(post => post.Comments)
                 .WithOne(comment => comment.Post);
             
-            modelBuilder.Entity<Comment>().HasOne(comment => comment.Creator)
+            modelBuilder.Entity<Comment>()
+                .HasOne(comment => comment.Creator)
                 .WithMany(user => user.CreatedComments);
             modelBuilder.Entity<Comment>().Property(comment => comment.CreatedAt).ValueGeneratedOnAdd()
                 .HasDefaultValueSql("now()");
-            modelBuilder.Entity<Comment>().ToTable("Comments");
             
             modelBuilder.Entity<File>().Property(file => file.Id).HasDefaultValueSql("uuid_generate_v4()");
             

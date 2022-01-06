@@ -5,6 +5,7 @@ import styles from "./ProfilePage.module.css";
 import {useRouteMatch} from "react-router-dom";
 import {UsersStoreStatus, useUsersStore} from "../../store/UsersStore";
 import Loader from "../Loader/Loader";
+import ActivitySection, {ActionType, ItemType} from "./ActivitySection/ActivitySection";
 
 type ProfilePageParams = {
     id: string
@@ -16,7 +17,7 @@ const ProfilePage = observer(() => {
 
     useEffect(() => {
         getUser(match.params.id);
-    }, [])
+    }, [match.params.id])
     
     return (
         <Page>
@@ -47,6 +48,16 @@ const ProfilePage = observer(() => {
                                         <div className={styles.email}>{currentUser.email}</div>
                                         <div className={styles.reg_date}>с {new Date(currentUser.createdAt).toLocaleString()}</div>
                                     </div>
+                                </div>
+                                <div className={styles.activities}>
+                                    <ActivitySection title={"Написанные статьи:"} actionType={ActionType.Created} 
+                                                     itemType={ItemType.Post} userId={currentUser.id}/>
+                                    <ActivitySection title={"Отмеченные статьи:"} actionType={ActionType.Marked} 
+                                                     itemType={ItemType.Post} userId={currentUser.id}/>
+                                    <ActivitySection title={"Написанные комментарии:"} actionType={ActionType.Created} 
+                                                     itemType={ItemType.Comment} userId={currentUser.id}/>
+                                    <ActivitySection title={"Отмеченные комментарии:"} actionType={ActionType.Marked} 
+                                                     itemType={ItemType.Comment} userId={currentUser.id}/>
                                 </div>
                             </div>
                 }

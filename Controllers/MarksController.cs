@@ -31,7 +31,10 @@ namespace BlogWebApp.Controllers
         [HttpGet("[action]/{postId}")]
         public async Task<ActionResult<IEnumerable<PostMarkDto>>> GetPostMarks(Guid postId)
         {
-            var marks = await _context.PostsMarks.Where(mark => mark.PostId == postId).ToListAsync();
+            var marks = await _context.PostsMarks
+                .Include(mark => mark.Post)
+                .Include(mark => mark.User)
+                .Where(mark => mark.PostId == postId).ToListAsync();
             
             return Ok(_mapper.Map<List<PostMarkDto>>(marks));
         }
@@ -40,7 +43,10 @@ namespace BlogWebApp.Controllers
         [HttpGet("[action]/{userId}")]
         public async Task<ActionResult<IEnumerable<PostMarkDto>>> GetUserPostsMarks(Guid userId)
         {
-            var marks = await _context.PostsMarks.Where(mark => mark.UserId == userId).ToListAsync();
+            var marks = await _context.PostsMarks
+                .Include(mark => mark.Post)
+                .Include(mark => mark.User)
+                .Where(mark => mark.UserId == userId).ToListAsync();
             
             return Ok(_mapper.Map<List<PostMarkDto>>(marks));
         }
@@ -49,7 +55,10 @@ namespace BlogWebApp.Controllers
         [HttpGet("[action]/{commentId}")]
         public async Task<ActionResult<IEnumerable<CommentMarkDto>>> GetCommentMarks(Guid commentId)
         {
-            var marks = await _context.CommentsMarks.Where(mark => mark.CommentId == commentId).ToListAsync();
+            var marks = await _context.CommentsMarks
+                .Include(mark => mark.Comment).ThenInclude(comment => comment.Post)
+                .Include(mark => mark.User)
+                .Where(mark => mark.CommentId == commentId).ToListAsync();
             
             return Ok(_mapper.Map<List<CommentMarkDto>>(marks));
         }
@@ -58,7 +67,10 @@ namespace BlogWebApp.Controllers
         [HttpGet("[action]/{userId}")]
         public async Task<ActionResult<IEnumerable<CommentMarkDto>>> GetUserCommentsMarks(Guid userId)
         {
-            var marks = await _context.CommentsMarks.Where(mark => mark.UserId == userId).ToListAsync();
+            var marks = await _context.CommentsMarks
+                .Include(mark => mark.Comment).ThenInclude(comment => comment.Post)
+                .Include(mark => mark.User)
+                .Where(mark => mark.UserId == userId).ToListAsync();
             
             return Ok(_mapper.Map<List<CommentMarkDto>>(marks));
         }
@@ -67,7 +79,10 @@ namespace BlogWebApp.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<ActionResult<PostMarkDto>> GetPostMark(Guid id)
         {
-            var mark = await _context.PostsMarks.FindAsync(id);
+            var mark = await _context.PostsMarks
+                .Include(mark => mark.Post)
+                .Include(mark => mark.User)
+                .FirstOrDefaultAsync(mark => mark.Id == id);
             
             if (mark is null)
             {
@@ -81,7 +96,10 @@ namespace BlogWebApp.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<ActionResult<CommentMarkDto>> GetCommentMark(Guid id)
         {
-            var mark = await _context.CommentsMarks.FindAsync(id);
+            var mark = await _context.CommentsMarks
+                .Include(mark => mark.Comment).ThenInclude(comment => comment.Post)
+                .Include(mark => mark.User)
+                .FirstOrDefaultAsync(mark => mark.Id == id);
 
             if (mark is null)
             {
@@ -106,8 +124,9 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            var existingMark = await _context.PostsMarks.FirstOrDefaultAsync(mark => 
-                mark.UserId.Equals(postMarkToAdd.UserId) && mark.PostId.Equals(postMarkToAdd.PostId));
+            var existingMark = await _context.PostsMarks
+                .FirstOrDefaultAsync(mark => mark.UserId.Equals(postMarkToAdd.UserId) && 
+                                             mark.PostId.Equals(postMarkToAdd.PostId));
 
             if (existingMark is not null)
             {
@@ -137,8 +156,9 @@ namespace BlogWebApp.Controllers
                 return NotFound();
             }
 
-            var existingMark = await _context.CommentsMarks.FirstOrDefaultAsync(mark =>
-                mark.UserId.Equals(commentMarkToAdd.UserId) && mark.CommentId.Equals(commentMarkToAdd.CommentId));
+            var existingMark = await _context.CommentsMarks
+                .FirstOrDefaultAsync(mark => mark.UserId.Equals(commentMarkToAdd.UserId) && 
+                                             mark.CommentId.Equals(commentMarkToAdd.CommentId));
 
             if (existingMark is not null)
             {

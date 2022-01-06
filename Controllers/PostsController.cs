@@ -29,7 +29,7 @@ namespace BlogWebApp.Controllers
 
         // GET: api/Posts
         [HttpGet]
-        public async Task<ActionResult<GetPostsResultDto>> GetPosts(int offset, int limit, Guid? creatorId, 
+        public async Task<ActionResult<GetPostsResultDto>> GetPosts(int offset, int limit, 
             string title, DateTime? startDateTime, DateTime? endDateTime)
         {
             var posts = await _context.Posts
@@ -37,11 +37,6 @@ namespace BlogWebApp.Controllers
                 .Include(post => post.Cover)
                 .Include(post => post.Marks)
                 .OrderByDescending(post => post.CreatedAt).ToListAsync();
-
-            if (creatorId is not null)
-            {
-                posts = posts.Where(post => post.Creator.Id == creatorId).ToList();
-            }
 
             if (title is not null)
             {
@@ -69,13 +64,25 @@ namespace BlogWebApp.Controllers
             };
         }
 
+        [HttpGet("[action]/{userId}")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetUserPosts(Guid userId)
+        {
+            var posts = await _context.Posts
+                .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
+                .Include(post => post.Cover)
+                .Include(post => post.Marks)
+                .Where(post => post.CreatorId == userId)
+                .OrderByDescending(post => post.CreatedAt).ToListAsync();
+
+            return _mapper.Map<List<PostDto>>(posts);
+        }
+
         // GET: api/Posts/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<PostDto>> GetPost(Guid id)
         {
             var post = await _context.Posts
-                .Include(post => post.Creator)
-                .ThenInclude(creator => creator.Avatar)
+                .Include(post => post.Creator).ThenInclude(creator => creator.Avatar)
                 .Include(post => post.Cover)
                 .Include(post => post.Marks)
                 .FirstOrDefaultAsync(post => post.Id == id);

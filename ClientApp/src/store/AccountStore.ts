@@ -1,11 +1,9 @@
 import {makeAutoObservable, reaction, runInAction} from "mobx";
-import {TokensDto} from "../DTOs/TokensDto";
 import usersService from "../services/usersService";
 import {LoginDto} from "../DTOs/LoginDto";
 import {SignUpDto} from "../DTOs/SignUpDto";
 import {AccountModel} from "../models/AccountModel";
 import {createContext, useContext} from "react";
-import jwtDecode, {JwtPayload} from "jwt-decode";
 
 export enum AccountStoreStatus {
     None = "None",
@@ -38,16 +36,8 @@ class Account {
         if (this.account) {
             await this.refreshTokenIfNeeded();
             
-            if (this.account) {
-                try {
-                    const jwt = jwtDecode<JwtPayload>(this.account.accessToken);
-
-                    if (jwt.exp) {
-                        result = jwt.exp * 1000 > Date.now();
-                    } else {
-                        this.logout();
-                    }
-                } catch (InvalidTokenError) {}
+            if (this.account && this.account.accessTokenExpiredAt) {
+                result = new Date(this.account.accessTokenExpiredAt).valueOf() >= Date.now();
             }
         }
         
@@ -55,46 +45,22 @@ class Account {
     }
     
     refreshTokenIfNeeded = async () => {
-        if (this.account) {
-            const jwt = jwtDecode<JwtPayload>(this.account.accessToken);
-
-            if (jwt.exp) {
-                if (jwt.exp * 1000 <= Date.now() - 60 * 1000) {
-                    if (!this.isRefreshingToken) {
-                        runInAction(() => {
-                            this.isRefreshingToken = true;
-                            this.refreshToken().then(() => {
-                                this.isRefreshingToken = false;
-                            });
+        if (this.account && this.account.accessTokenExpiredAt) {
+            if (new Date(this.account.accessTokenExpiredAt).valueOf() <= Date.now() + 60 * 1000) {
+                if (!this.isRefreshingToken) {
+                    runInAction(() => {
+                        this.isRefreshingToken = true;
+                        this.refreshToken().then(() => {
+                            this.isRefreshingToken = false;
                         });
-
-                        
-                    }
+                    });
                 }
             }
-            
         }
     }
 
-    private setAccount = (tokens: TokensDto) => {
-        let userId = ""
-
-        try {
-            const jwt = jwtDecode<JwtPayload>(tokens.accessToken);
-
-            if (jwt.sub) {
-                userId = jwt.sub;
-            }
-        }
-        catch (InvalidTokenError) {
-            throw new Error();
-        }
-
-        this.account = {
-            userId: userId,
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken
-        };
+    private setAccount = (account: AccountModel) => {
+        this.account = account;
     }
     
     login = async (loginData: LoginDto) => {
@@ -104,9 +70,9 @@ class Account {
             (response) => {
                 if (response.status === 200) {
                     return response.json().then(
-                        (tokens: TokensDto) => {
+                        (account: AccountModel) => {
                             try {
-                                this.loginSuccess(tokens);
+                                this.loginSuccess(account);
                                 return true;
                             } catch {
                                 return false;
@@ -129,8 +95,8 @@ class Account {
             }
         );
     }
-    private loginSuccess = (tokens: TokensDto) => {
-        this.setAccount(tokens)
+    private loginSuccess = (account: AccountModel) => {
+        this.setAccount(account);
 
         this.status = AccountStoreStatus.LoginSuccess;
     }
@@ -163,19 +129,19 @@ class Account {
 
     logout = () => {
         if (this.account) {
-            usersService.logout(this.account.refreshToken);
+            usersService.logout();
             this.account = undefined;
         }
     }
     
     refreshToken = async () => {
         if (this.account) {
-            return await usersService.refreshToken(this.account.refreshToken).then(
+            return await usersService.refreshToken().then(
                 (response) => {
                     if (response.status === 200) {
                         response.json().then(
-                            (tokens: TokensDto) => {
-                                this.setAccount(tokens);
+                            (account: AccountModel) => {
+                                this.setAccount(account);
                             },
                             () => this.logout()
                         )

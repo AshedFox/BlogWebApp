@@ -3,7 +3,7 @@ import {PostModel} from "../../../models/PostModel";
 import styles from "./Post.module.css";
 import {routes} from "../../../constants/routes";
 import {Link} from 'react-router-dom';
-import Mark from "../../Mark/Mark";
+import Mark, {MarkViewType} from "../../Mark/Mark";
 import {observer} from "mobx-react";
 import {useAccountStore} from "../../../store/AccountStore";
 import {PostMarkToAddDto} from "../../../DTOs/PostMarkToAddDto";
@@ -107,10 +107,10 @@ const Post = observer(({post}:PostProps) => {
             <div className={styles.footer}>
                 {
                     account !== undefined ?
-                        <Mark marks={post.marks} isVotable={true} handleMark={handleMark}
-                              handleUnmark={hadnleUnmark} handleChangeMark={handleChangeMark}
+                        <Mark marks={post.marks} isVotable={true} userToCheckMarkId={account.userId} 
+                              handleMark={handleMark} handleUnmark={hadnleUnmark} handleChangeMark={handleChangeMark}
                         /> :
-                        <Mark marks={post.marks} isVotable={false}/>
+                        <Mark marks={post.marks} isVotable={false} viewType={MarkViewType.OnlyTotal}/>
                 }
             </div>
         </div>

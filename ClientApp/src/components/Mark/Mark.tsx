@@ -5,21 +5,32 @@ import {useAccountStore} from "../../store/AccountStore";
 import {PostMarkModel} from "../../models/PostMarkModel";
 import {CommentMarkModel} from "../../models/CommentMarkModel";
 
+export enum MarkViewType {
+    OnlyArrows,
+    OnlyCurrentVoteArrow,
+    OnlyTotal,
+    All
+}
 
 type DefaultProps = {
+    userToCheckMarkId?: string
     marks: PostMarkModel[] | CommentMarkModel[]
 }
 
-type OptionalProps = 
-    | { isVotable: true, handleMark: (vote:number) => void, handleUnmark: () => void, handleChangeMark: (vote:number) => void }
-    | { isVotable: false, handleMark?: never, handleUnmark?: never, handleChangeMark?: never }
+type OptionalProps = | { 
+    isVotable: true, viewType?: never,
+    handleMark: (vote:number) => void, handleUnmark: () => void, handleChangeMark: (vote:number) => void 
+} 
+| { 
+    isVotable: false, viewType: MarkViewType
+    handleMark?: never, handleUnmark?: never, handleChangeMark?: never 
+}
 
 type MarkProps = DefaultProps & OptionalProps;
 
-const Mark: FC<MarkProps> = ({marks, isVotable, handleMark, 
-                                 handleChangeMark, handleUnmark}) => 
-{
+const Mark: FC<MarkProps> = (props) => {
     const {account} = useAccountStore();
+    const {marks, userToCheckMarkId, isVotable, viewType, handleMark, handleChangeMark, handleUnmark} = props;
     const [totalMark, setTotalMark] = useState(0);
     const [currentMark, setCurrentMark] = useState<number>();
     
@@ -46,7 +57,14 @@ const Mark: FC<MarkProps> = ({marks, isVotable, handleMark,
     const checkIfVoted = () => {
         let newCurrentMark = undefined;
         
-        if (account) {
+        if (userToCheckMarkId) {
+            marks.forEach(mark => {
+                if (mark.userId === userToCheckMarkId) {
+                    newCurrentMark = mark.value;
+                }
+            });
+        }
+        else if (account) {
             marks.forEach(mark => {
                 if (mark.userId === account.userId) {
                     newCurrentMark = mark.value;
@@ -73,17 +91,52 @@ const Mark: FC<MarkProps> = ({marks, isVotable, handleMark,
         }
     }
     
-    return (
-        <div className={styles.container}>
-            {isVotable && 
-                <div className={`${styles.minus} ${currentMark === 0 ? styles.voted : ""}`} onClick={() => handleVote(0)}/>
+    const renderMinusArrow = () => {
+        if (isVotable){
+            return <div className={`${styles.minus} ${currentMark === 0 ? styles.voted : ""}`} onClick={() => handleVote(0)}/>;
+        }
+        else {
+            if (viewType === MarkViewType.OnlyArrows || viewType === MarkViewType.All) {
+                return <div className={`${styles.minus} ${currentMark === 0 ? styles.voted : ""}`}/>;
             }
-            <div className={styles.mark} title={`Всего оценок: ${marks.length}`}>
+            else if (viewType === MarkViewType.OnlyCurrentVoteArrow && currentMark === 0) {
+                return <div className={`${styles.minus} ${styles.voted}`}/>;
+            }
+        }
+        
+        return <></>
+    }
+    
+    const renderPlusArrow = () => {
+        if (isVotable) {
+            return <div className={`${styles.plus} ${currentMark === 1 ? styles.voted : ""}`} onClick={() => handleVote(1)}/>
+        }
+        else {
+            if (viewType === MarkViewType.OnlyArrows || viewType === MarkViewType.All) {
+                return <div className={`${styles.plus} ${currentMark === 1 ? styles.voted : ""}`}/>
+            }
+            else if (viewType === MarkViewType.OnlyCurrentVoteArrow && currentMark === 1) {
+                return <div className={`${styles.plus} ${styles.voted}`}/>
+            }
+        }
+        
+        return <></>
+    }
+    
+    const renderTotalMark = () => {
+        if (isVotable || viewType === MarkViewType.OnlyTotal || viewType === MarkViewType.All) {
+            return <div className={styles.mark} title={`Всего оценок: ${marks.length}`}>
                 <div className={styles.star}/>
                 <div className={styles.text}>{totalMark}</div>
-            </div>
-            {isVotable && 
-                <div className={`${styles.plus} ${currentMark === 1 ? styles.voted : ""}`} onClick={() => handleVote(1)}/>}
+            </div>;
+        }
+    }
+    
+    return (
+        <div className={styles.container}>
+            {renderMinusArrow()}
+            {renderTotalMark()}
+            {renderPlusArrow()}
         </div>
     );
 };

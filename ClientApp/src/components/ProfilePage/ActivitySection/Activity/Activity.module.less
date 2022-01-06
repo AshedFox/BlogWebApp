@@ -1,0 +1,27 @@
+﻿@import "../../../../less/variables";
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  .props {
+    display: flex;
+    flex-direction: column;
+    
+    .title{
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.4s;
+      
+      &:hover {
+        color: @color4;
+      }
+    }
+    .content {
+      font-size: 13px;
+      white-space: break-spaces;
+    }
+  }
+}

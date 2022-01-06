@@ -3,7 +3,7 @@ import {PostModel} from "../../../models/PostModel";
 import styles from "./PostMini.module.css";
 import {routes} from "../../../constants/routes";
 import {Link} from 'react-router-dom';
-import Mark from "../../Mark/Mark";
+import Mark, {MarkViewType} from "../../Mark/Mark";
 
 type PostMiniProps = {
     post: PostModel
@@ -42,7 +42,7 @@ const PostMini = ({post}:PostMiniProps) => {
                 </div>
             </div>
             <div className={styles.footer}>
-                <Mark marks={post.marks} isVotable={false}/>
+                <Mark marks={post.marks} isVotable={false} viewType={MarkViewType.OnlyTotal}/>
             </div>
         </div>
     );

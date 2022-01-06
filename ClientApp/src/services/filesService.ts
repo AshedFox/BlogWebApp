@@ -1,11 +1,9 @@
-﻿import {makeAuthHeader} from "../helpers/authHeader";
-
+﻿
 const apiUrl = window.location.origin + "/api/files";
 
 const getFile = async (id: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + `/${id}`, options);
@@ -14,7 +12,7 @@ const getFile = async (id: string) => {
 }
 
 const postFile = async (file: File) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
 
     const formData = new FormData();
     formData.append("file", file);

@@ -32,7 +32,7 @@ namespace BlogWebApp.Controllers
         public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(Guid? postId)
         {
             var comments = _context.Comments
-                .Include(comment => comment.Creator)
+                .Include(comment => comment.Creator).ThenInclude(user => user.Avatar)
                 .Include(comment => comment.Post)
                 .Include(comment => comment.ParentComment)
                 .Include(comment => comment.Marks)
@@ -45,13 +45,27 @@ namespace BlogWebApp.Controllers
 
             return _mapper.Map<List<CommentDto>>(await comments.ToListAsync());
         }
+        
+        [HttpGet("[action]/{userId}")]
+        public async Task<ActionResult<IEnumerable<CommentDto>>> GetUserComments(Guid userId)
+        {
+            var comments = await _context.Comments
+                .Include(comment => comment.Creator).ThenInclude(user => user.Avatar)
+                .Include(comment => comment.Post)
+                .Include(comment => comment.ParentComment)
+                .Include(comment => comment.Marks)
+                .Where(comment => comment.CreatorId == userId)
+                .OrderBy(comment => comment.CreatedAt).ToListAsync();
+
+            return _mapper.Map<List<CommentDto>>(comments);
+        }
 
         // GET: api/Comments/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<CommentDto>> GetComment(Guid id)
         {
             var comment = await _context.Comments
-                .Include(comment => comment.Creator)
+                .Include(comment => comment.Creator).ThenInclude(user => user.Avatar)
                 .Include(comment => comment.Post)
                 .Include(comment => comment.ParentComment)
                 .Include(comment => comment.Marks)

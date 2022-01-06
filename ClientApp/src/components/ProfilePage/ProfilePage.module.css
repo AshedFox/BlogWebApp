@@ -2,6 +2,9 @@
   padding: 15px 0;
 }
 .container .content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background-color: #fafafa;
   padding: 20px;
   border-radius: 8px;
@@ -9,6 +12,7 @@
 .container .content .user {
   display: flex;
   align-items: center;
+  margin-bottom: 60px;
 }
 .container .content .user .avatar {
   border-radius: 50%;
@@ -39,5 +43,11 @@
 }
 .container .content .user .info .reg_date {
   font-size: 14px;
+}
+.container .content .activities {
+  display: grid;
+  grid-gap: 40px;
+  grid-template-rows: auto auto;
+  grid-template-columns: auto auto;
 }
 /*# sourceMappingURL=ProfilePage.module.css.map */

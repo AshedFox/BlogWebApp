@@ -13,6 +13,7 @@ using BlogWebApp.DTOs;
 using BlogWebApp.Models;
 using Isopoh.Cryptography.Argon2;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +34,7 @@ namespace BlogWebApp.Controllers
 
         // GET: api/Users/Login
         [HttpPost("[action]")]
-        public async Task<ActionResult<TokensDto>> Login([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<AccountDto>> Login([FromBody] LoginDto loginDto)
         {
             var user = await _context.Users.Where(user => user.Email == loginDto.Email).FirstOrDefaultAsync();
 
@@ -62,14 +63,27 @@ namespace BlogWebApp.Controllers
             await _context.SaveChangesAsync();
 
             var accessToken = TokensGenerator.GenerateAccessToken(user.Id.ToString());
+            var accessTokenExpiredAt = DateTime.UtcNow.AddMinutes(AuthOptions.AccessTokenLifetime);
 
-            var tokensDto = new TokensDto()
+            Response.Cookies.Append("X-Access-Token", accessToken,
+                new CookieOptions()
+                {
+                    HttpOnly = true, SameSite = SameSiteMode.Strict,
+                    Expires = accessTokenExpiredAt
+                });
+            Response.Cookies.Append("X-Refresh-Token", refreshToken.Id.ToString(),
+                new CookieOptions()
+                {
+                    HttpOnly = true, SameSite = SameSiteMode.Strict, 
+                    Expires = refreshToken.ExpiredAt
+                });
+            
+            return Ok(new AccountDto()
             {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken.Id.ToString()
-            };
-
-            return Ok(tokensDto);
+                UserId = user.Id,
+                AccessTokenExpiredAt = accessTokenExpiredAt,
+                RefreshTokenExpiredAt = refreshToken.ExpiredAt
+            });
         }
 
         // POST: api/Users/SignUp
@@ -99,8 +113,10 @@ namespace BlogWebApp.Controllers
         // POST: api/Users/Logout
         [HttpPost("[action]")]
         [Authorize]
-        public async Task<ActionResult> Logout([FromBody] string refreshToken)
+        public async Task<ActionResult> Logout()
         {
+            var refreshToken = Request.Cookies["X-Refresh-Token"];
+            
             if (refreshToken is null)
             {
                 return BadRequest();
@@ -116,13 +132,18 @@ namespace BlogWebApp.Controllers
             _context.Remove(token);
             await _context.SaveChangesAsync();
 
+            Response.Cookies.Delete("X-Access-Token");
+            Response.Cookies.Delete("X-Refresh-Token");
+            
             return Ok();
         }
 
         // POST: api/Users/RefreshToken
         [HttpPost("[action]")]
-        public async Task<ActionResult<TokensDto>> RefreshToken([FromBody] string refreshToken)
+        public async Task<ActionResult<string>> RefreshToken()
         {
+            var refreshToken = Request.Cookies["X-Refresh-Token"];
+            
             if (refreshToken is null)
             {
                 return BadRequest();
@@ -155,14 +176,27 @@ namespace BlogWebApp.Controllers
             await _context.SaveChangesAsync();
 
             var accessToken = TokensGenerator.GenerateAccessToken(token.UserId.ToString());
+            var accessTokenExpiredAt = DateTime.UtcNow.AddMinutes(AuthOptions.AccessTokenLifetime);
 
-            var tokensDto = new TokensDto()
+            Response.Cookies.Append("X-Access-Token", accessToken,
+                new CookieOptions()
+                {
+                    HttpOnly = true, SameSite = SameSiteMode.Strict,
+                    Expires = accessTokenExpiredAt
+                });
+            Response.Cookies.Append("X-Refresh-Token", newRefreshToken.Id.ToString(),
+                new CookieOptions()
+                {
+                    HttpOnly = true, SameSite = SameSiteMode.Strict, 
+                    Expires = newRefreshToken.ExpiredAt
+                });
+
+            return Ok(new AccountDto()
             {
-                AccessToken = accessToken,
-                RefreshToken = newRefreshToken.Id.ToString()
-            };
-
-            return Ok(tokensDto);
+                UserId = newRefreshToken.UserId,
+                AccessTokenExpiredAt = accessTokenExpiredAt,
+                RefreshTokenExpiredAt = newRefreshToken.ExpiredAt
+            });
         }
 
         // GET: api/Users
@@ -171,6 +205,9 @@ namespace BlogWebApp.Controllers
         {
             var users = await _context.Users
                 .Include(user => user.CreatedPosts)
+                .Include(user => user.PostsMarks)
+                .Include(user => user.CreatedComments)
+                .Include(user => user.CommentsMarks)
                 .Include(user => user.Avatar)
                 .ToListAsync();
             
@@ -183,8 +220,11 @@ namespace BlogWebApp.Controllers
         {
             var user = await _context.Users
                 .Include(user => user.CreatedPosts)
+                .Include(user => user.PostsMarks)
+                .Include(user => user.CreatedComments)
+                .Include(user => user.CommentsMarks)
                 .Include(user => user.Avatar)
-                .FirstOrDefaultAsync(user1 => user1.Id == id);
+                .FirstOrDefaultAsync(user => user.Id == id);
 
             if (user is null)
             {

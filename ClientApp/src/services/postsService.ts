@@ -1,24 +1,18 @@
 import {PostToAddDto} from "../DTOs/PostToAddDto";
 import {PostToEditDto} from "../DTOs/PostToEditDto";
-import {makeAuthHeader} from "../helpers/authHeader";
 
 const apiUrl = window.location.origin + "/api/posts";
 
-const getPosts = async (offset: number, limit: number, creatorId?: string, title?: string,
+const getPosts = async (offset: number, limit: number, title?: string,
                         startDateTime?:string, endDateTime?: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     let urlParams = new URLSearchParams({
         offset: String(offset),
         limit: String(limit)
     });
-
-    if (creatorId) {
-        urlParams.append("creatorId", creatorId);
-    }
     
     if (title) {
         urlParams.append("title", title);
@@ -37,10 +31,19 @@ const getPosts = async (offset: number, limit: number, creatorId?: string, title
     return await fetch(request);
 }
 
+const getUserPosts = async (userId: string) => {
+    const options: RequestInit = {
+        method: "GET",
+    }
+
+    const request = new Request(apiUrl + `/getUserPosts/${userId}`, options);
+
+    return await fetch(request);
+}
+
 const getPost = async (id: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
     
     const request = new Request(apiUrl + `/${id}`, options);
@@ -49,7 +52,7 @@ const getPost = async (id: string) => {
 }
 
 const postPost = async (postToAdd: PostToAddDto) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
     const options:RequestInit = {
@@ -63,7 +66,7 @@ const postPost = async (postToAdd: PostToAddDto) => {
 }
 
 const putPost = async (id: string, postToEdit: PostToEditDto) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "PUT",
@@ -76,7 +79,7 @@ const putPost = async (id: string, postToEdit: PostToEditDto) => {
 }
 
 const deletePost = async (id: string) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "DELETE",
@@ -89,6 +92,7 @@ const deletePost = async (id: string) => {
 
 const postsService = {
     getPosts,
+    getUserPosts,
     getPost,
     postPost,
     putPost,

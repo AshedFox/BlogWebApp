@@ -1,0 +1,28 @@
+﻿@import "../../../less/variables";
+
+
+.container {
+  display: flex;
+  flex-direction: column;
+  //max-height: 300px;
+
+  & > *:not(:last-child) {
+    margin-bottom: 15px;
+  }
+
+  .title {
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 15px;
+    height: 150px;
+    overflow-y: auto;
+
+    & > *:not(:last-child) {
+      margin-bottom: 7px;
+    }
+  }
+}

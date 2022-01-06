@@ -5,7 +5,7 @@ import {CommentMarkModel} from "./CommentMarkModel";
 export interface CommentModel {
     id: string;
     content: string;
-    createdAt: Date;
+    createdAt: string;
     parentComment?: CommentModel;
     creator: UserModel;
     post: PostModel;

@@ -14,6 +14,9 @@ namespace BlogWebApp.DTOs
         public DateTime? BornAt { get; set; }
         public UserGender Gender { get; set; }
         public FileDto Avatar { get; set; }
-        public ICollection<PostDto> Posts { get; set; } = new List<PostDto>();
+        public virtual ICollection<PostDto> CreatedPosts { get; set; } = new List<PostDto>();
+        public virtual ICollection<PostMarkDto> PostsMarks { get; set; } = new List<PostMarkDto>();
+        public virtual ICollection<CommentDto> CreatedComments { get; set; } = new List<CommentDto>();
+        public virtual ICollection<CommentMarkDto> CommentsMarks { get; set; } = new List<CommentMarkDto>();
     }
 }

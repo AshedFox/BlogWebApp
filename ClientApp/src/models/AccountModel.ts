@@ -1,7 +1,5 @@
-import {UserModel} from "./UserModel";
-
 export interface AccountModel {
-    userId: string,
-    accessToken: string,
-    refreshToken: string
+    userId: string;
+    accessTokenExpiredAt: string;
+    refreshTokenExpiredAt: string;
 }

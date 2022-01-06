@@ -6,7 +6,7 @@ import {PostMarkModel} from "./PostMarkModel";
 export interface PostModel {
     id: string;
     title: string;
-    createdAt: Date;
+    createdAt: string;
     creator: UserModel;
     cover?: FileModel;
     content: string;

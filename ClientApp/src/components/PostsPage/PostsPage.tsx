@@ -57,7 +57,7 @@ const PostsPage = observer(() => {
                 Number.parseInt(match.params.page) - 1
             : 0;
 
-        getPosts(page, countPerPage, undefined, searchTitle, searchStartDateTime, searchEndDateTime)
+        getPosts(page, countPerPage, searchTitle, searchStartDateTime, searchEndDateTime)
             .then((value) => {
                 if (value && value.posts.length > 0) {
                     setPage(page)

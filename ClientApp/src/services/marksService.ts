@@ -1,5 +1,4 @@
-﻿import {makeAuthHeader} from "../helpers/authHeader";
-import {PostMarkToEditDto} from "../DTOs/PostMarkToEditDto";
+﻿import {PostMarkToEditDto} from "../DTOs/PostMarkToEditDto";
 import {CommentMarkToEditDto} from "../DTOs/CommentMarkToEditDto";
 import {PostMarkToAddDto} from "../DTOs/PostMarkToAddDto";
 import {CommentMarkToAddDto} from "../DTOs/CommentMarkToAddDto";
@@ -9,7 +8,6 @@ const apiUrl = window.location.origin + "/api/marks";
 const getPostMarks = async (postId: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
     
     const request = new Request(apiUrl + `/getPostMarks/${postId}`, options);
@@ -20,7 +18,6 @@ const getPostMarks = async (postId: string) => {
 const getUserPostsMarks = async (userId: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + `/getUserPostsMarks/${userId}`, options);
@@ -31,7 +28,6 @@ const getUserPostsMarks = async (userId: string) => {
 const getPostMark = async (id: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + `/getPostMark/${id}`, options);
@@ -40,7 +36,7 @@ const getPostMark = async (id: string) => {
 }
 
 const markPost = async (postMarkToAdd: PostMarkToAddDto) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
     const options:RequestInit = {
@@ -54,7 +50,7 @@ const markPost = async (postMarkToAdd: PostMarkToAddDto) => {
 }
 
 const changePostMark = async (id: string, postMarkToEdit: PostMarkToEditDto) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "PUT",
@@ -67,7 +63,7 @@ const changePostMark = async (id: string, postMarkToEdit: PostMarkToEditDto) => 
 }
 
 const unmarkPost = async (id: string) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "DELETE",
@@ -81,7 +77,6 @@ const unmarkPost = async (id: string) => {
 const getCommentMarks = async (commentId: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + `/getCommentMarks/${commentId}`, options);
@@ -92,7 +87,6 @@ const getCommentMarks = async (commentId: string) => {
 const getUserCommentsMarks = async (userId: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + `/getUserCommentsMarks/${userId}`, options);
@@ -103,7 +97,6 @@ const getUserCommentsMarks = async (userId: string) => {
 const getCommentMark = async (id: string) => {
     const options: RequestInit = {
         method: "GET",
-        headers: makeAuthHeader()
     }
 
     const request = new Request(apiUrl + `/getCommentMark/${id}`, options);
@@ -112,7 +105,7 @@ const getCommentMark = async (id: string) => {
 }
 
 const markComment = async (commentMarkToAdd: CommentMarkToAddDto) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
     const options:RequestInit = {
@@ -126,7 +119,7 @@ const markComment = async (commentMarkToAdd: CommentMarkToAddDto) => {
 }
 
 const changeCommentMark = async (id: string, commentMarkToEdit: CommentMarkToEditDto) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "PUT",
@@ -139,7 +132,7 @@ const changeCommentMark = async (id: string, commentMarkToEdit: CommentMarkToEdi
 }
 
 const unmarkComment = async (id: string) => {
-    const headers = new Headers(makeAuthHeader());
+    const headers = new Headers();
     headers.append("Content-Type", "application/json");
     const options:RequestInit = {
         method: "DELETE",

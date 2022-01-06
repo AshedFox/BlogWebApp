@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.container .props {
+  display: flex;
+  flex-direction: column;
+}
+.container .props .title {
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.4s;
+}
+.container .props .title:hover {
+  color: #A8BDBF;
+}
+.container .props .content {
+  font-size: 13px;
+  white-space: break-spaces;
+}
+/*# sourceMappingURL=Activity.module.css.map */

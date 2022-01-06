@@ -31,8 +31,10 @@ const AuthModal = observer(() => {
             passwordHash: CryptoJS.SHA512(password).toString(CryptoJS.enc.Hex),
         }
 
-        login(loginData).then(()=>{
-            setStatus(AuthModalStatus.Closing)
+        login(loginData).then((result) => {
+            if (result) {
+                setStatus(AuthModalStatus.Closing)
+            }
         })
     }
 
@@ -47,11 +49,13 @@ const AuthModal = observer(() => {
 
         if (password === passwordRepeat) {
             signUp(signUpData).then(
-                () => {
-                    setEmail("");
-                    setPassword("");
-                    setPasswordRepeat("");
-                    setName("");
+                (result) => {
+                    if (result) {
+                        setEmail("");
+                        setPassword("");
+                        setPasswordRepeat("");
+                        setName("");
+                    }
                 }
             );
         }

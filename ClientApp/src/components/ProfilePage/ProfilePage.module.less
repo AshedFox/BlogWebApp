@@ -2,17 +2,20 @@
 
 .container {
   padding: 15px 0;
-  //height: 100%;
   
   .content {
+    display: flex;
+    flex-direction: column;
+    
+    height: 100%;
     background-color: @color7;
-   // height: 100%;
     padding: 20px;
     border-radius: 8px;
     
     .user {
       display: flex;
       align-items: center;
+      margin-bottom: 60px;
 
       .avatar {
         border-radius: 50%;
@@ -47,6 +50,14 @@
           font-size: 14px;
         }
       }
+    }
+    
+    .activities {
+      display: grid;
+      grid-gap: 40px;
+      
+      grid-template-rows: auto auto;
+      grid-template-columns: auto auto;
     }
   }
 }
