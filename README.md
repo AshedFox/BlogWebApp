@@ -1,6 +1,10 @@
 ﻿# Blog Web Application
 ___
 ![screen_example](./images/image0.jpg)
+
+## Demo
+You may try demo deployed on heroku [here](https://blog-app-12345.herokuapp.com/posts)
+
 ## About
 Blog Web Application built using ASP.NET API, _[React Client App](./ClientApp)_, PostgreSQL database for storing data and Entity Framework for database interactions.
 #### Simplified global goals:
